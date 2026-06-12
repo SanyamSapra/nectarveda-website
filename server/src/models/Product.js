@@ -91,11 +91,10 @@ const productSchema = new mongoose.Schema(
 );
 
 // Auto-generate slug from name
-productSchema.pre('save', function (next) {
+productSchema.pre('save', function () {
     if (this.isModified('name')) {
         this.slug = createSlug(this.name);
     }
-    next();
 });
 
 const Product = mongoose.model('Product', productSchema);
