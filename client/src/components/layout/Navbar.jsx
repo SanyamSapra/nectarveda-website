@@ -30,12 +30,12 @@ export default function Navbar() {
     return (
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-stone-100 shadow-sm transition-all">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="h-[80px] flex items-center justify-between">
+                <div className="h-[88px] flex items-center justify-between">
 
                     {/* 1. UPGRADED LOGO SECTION */}
                     <Link href="/" className="flex items-center gap-3 shrink-0 group">
                         {/* Logo Icon Container - Increased size to w-16 h-16 for desktop */}
-                        <div className="relative w-12 h-12 md:w-16 md:h-16 flex shrink-0 items-center justify-center rounded-full bg-teal-50/50 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                        <div className="relative w-12 h-12 md:w-16 md:h-16 flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-50 to-emerald-50 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                             <Image
                                 src="/logo.png"
                                 alt="NectarVeda Logo"
@@ -43,13 +43,13 @@ export default function Navbar() {
                                 priority
                                 sizes="(max-width: 768px) 48px, 64px"
                                 /* Removed p-1.5 and used object-cover to perfectly fill the space */
-                                className="object-cover" 
+                                className="object-cover"
                             />
                         </div>
 
                         {/* Brand Typography */}
                         <div className="flex flex-col justify-center">
-                            <span className="text-xl md:text-2xl font-extrabold tracking-tight text-teal-900 leading-none">
+                            <span className="text-xl md:text-2xl font-extrabold tracking-tight text-teal-700 leading-none">
                                 NECTARVEDA
                             </span>
                             <span className="text-[10px] md:text-xs font-semibold text-emerald-600 mt-1 uppercase tracking-widest">
@@ -68,7 +68,7 @@ export default function Navbar() {
                                     href={link.href}
                                     className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300
                                     ${active
-                                            ? 'bg-white text-teal-900 shadow-sm ring-1 ring-stone-200/50'
+                                            ? 'bg-white text-teal-700 shadow-sm ring-1 ring-stone-200/50'
                                             : 'text-stone-500 hover:text-teal-800 hover:bg-stone-100/50'
                                         }`}
                                 >
@@ -87,7 +87,7 @@ export default function Navbar() {
                             <input
                                 type="search"
                                 placeholder="Search wellness..."
-                                className="w-56 rounded-full border border-stone-200 bg-stone-50 pl-10 pr-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+                                className="w-64 rounded-full border border-stone-200 bg-stone-50 pl-10 pr-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                             />
                         </label>
 
@@ -133,7 +133,7 @@ export default function Navbar() {
                         ) : (
                             <Link
                                 href="/login"
-                                className="ml-2 px-6 py-2.5 rounded-full bg-teal-900 text-white text-sm font-semibold hover:bg-teal-800 hover:shadow-md transition-all duration-300"
+                                className="ml-2 px-6 py-2.5 rounded-full bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 shadow-md hover:shadow-lg transition-all duration-300"
                             >
                                 Sign in
                             </Link>
@@ -217,7 +217,7 @@ export default function Navbar() {
                             <Link
                                 href="/login"
                                 onClick={() => setMobileOpen(false)}
-                                className="w-full px-5 py-3.5 rounded-2xl bg-teal-900 text-white text-sm font-semibold text-center hover:bg-teal-800 transition-colors shadow-sm"
+                                className="w-full px-5 py-3.5 rounded-2xl bg-teal-700 text-white text-sm font-semibold text-center hover:bg-teal-800 transition-colors shadow-sm"
                             >
                                 Sign In / Register
                             </Link>

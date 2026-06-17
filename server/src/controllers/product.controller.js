@@ -105,6 +105,10 @@ const updateProduct = asyncHandler(async (req, res) => {
         req.body.slug = createSlug(req.body.name);
     }
 
+    if (req.files && req.files.length > 0) {
+        req.body.images = req.files.map(file => file.path);
+    }
+
     const product = await Product.findByIdAndUpdate(
         req.params.id, 
         req.body, 

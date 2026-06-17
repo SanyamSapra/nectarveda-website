@@ -34,25 +34,92 @@ export default function LoginPage() {
     }
 
     return (
-        <div>
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                />
-                <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                />
-                <button type="submit">Login</button>
-            </form>
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4">
+
+            <div className="w-full max-w-md">
+
+                {/* Logo / Brand */}
+                <div className="text-center mb-8">
+                    <h1 className="text-4xl font-bold text-teal-800">
+                        NectarVeda
+                    </h1>
+
+                    <p className="text-slate-500 mt-2">
+                        Ayurveda for Better Living
+                    </p>
+                </div>
+
+                {/* Card */}
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8">
+
+                    <div className="mb-8 text-center">
+                        <h2 className="text-3xl font-bold text-slate-900">
+                            Welcome Back
+                        </h2>
+
+                        <p className="text-slate-500 mt-2">
+                            Login to continue your wellness journey
+                        </p>
+                    </div>
+
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                    >
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="you@example.com"
+                                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter your password"
+                                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                            Login
+                        </button>
+
+                    </form>
+
+                    <div className="mt-6 text-center text-sm text-slate-500">
+                        Don't have an account?{" "}
+                        <a
+                            href="/register"
+                            className="text-teal-700 font-semibold hover:text-teal-800"
+                        >
+                            Create Account
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
     )
 }

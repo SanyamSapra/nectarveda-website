@@ -8,6 +8,7 @@ import categoryRoutes from './routes/category.routes.js'
 import cartRoutes from './routes/cart.routes.js'
 import orderRoutes from './routes/order.routes.js'
 import userRoutes from './routes/user.routes.js'
+import './config/cloudinary.js'
 
 const app = express();
 

@@ -1,7 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,19 +16,29 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "NectarVeda",
-  description: "Ayurvedic products for healthy living",
+  description: "Premium Ayurvedic Products for Healthy Living",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
         <AuthProvider>
+
+          {/* Navbar */}
           <Navbar />
-          {children}
+
+          {/* Main Content */}
+          <main className="flex-1">
+            {children}
+          </main>
+
+          {/* Footer */}
+          <Footer />
+
         </AuthProvider>
       </body>
     </html>
