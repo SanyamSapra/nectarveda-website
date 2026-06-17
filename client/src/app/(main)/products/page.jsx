@@ -34,10 +34,10 @@ export default function ProductsPage() {
         : products.filter(p => p.category?._id === selectedCategory);
 
     if (loading) return (
-        <div className="pt-24 text-center text-stone-400">Loading products...</div>
+        <div className="pt-20 text-center text-stone-400">Loading products...</div>
     );
 
-    return (<main className="min-h-screen bg-slate-50 pt-28 pb-20">
+    return (<main className="min-h-screen bg-slate-50 pt-20 pb-20">
 
         <div className="max-w-7xl mx-auto px-6">
 
