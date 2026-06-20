@@ -26,7 +26,7 @@ const updateProfile = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
 
     if (email && email !== user.email) {
         const emailExists = await User.findOne({
@@ -43,6 +43,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     }
 
     if (name) user.name = name;
+    if (phone) user.phone = phone; 
 
     if (password) {
         const salt = await bcrypt.genSalt(10);
@@ -59,6 +60,7 @@ const updateProfile = asyncHandler(async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             role: updatedUser.role,
+            phone: updatedUser.phone, 
         },
     });
 });
