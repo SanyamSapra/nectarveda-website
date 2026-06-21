@@ -42,8 +42,8 @@ const updateProfile = asyncHandler(async (req, res) => {
         user.email = email;
     }
 
-    if (name) user.name = name;
-    if (phone) user.phone = phone; 
+    if (name !== undefined) user.name = name;
+    if (phone !== undefined) user.phone = phone;
 
     if (password) {
         const salt = await bcrypt.genSalt(10);
@@ -60,7 +60,7 @@ const updateProfile = asyncHandler(async (req, res) => {
             name: updatedUser.name,
             email: updatedUser.email,
             role: updatedUser.role,
-            phone: updatedUser.phone, 
+            phone: updatedUser.phone,
         },
     });
 });

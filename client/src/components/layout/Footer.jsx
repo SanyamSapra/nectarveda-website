@@ -1,167 +1,175 @@
 import Link from 'next/link';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, Leaf } from 'lucide-react';
+import Image from 'next/image';
+
+// lucide-react dropped brand/social icons (trademarked logos) from its
+// core set, so these are small inline SVGs instead of a library import.
+// Mimic lucide's API: accept `size` and map it to width/height.
+const InstagramIcon = ({ size = 24, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+);
+
+const FacebookIcon = ({ size = 24, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+);
+
+const TwitterIcon = ({ size = 24, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
+    </svg>
+);
+
+const quickLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/products', label: 'Products' },
+    { href: '/cart', label: 'Cart' },
+    { href: '/profile', label: 'Profile' },
+];
+
+const categories = [
+    { href: '/products?category=hair-care', label: 'Hair Care' },
+    { href: '/products?category=skin-care', label: 'Skin Care' },
+    { href: '/products?category=health-wellness', label: 'Health & Wellness' },
+    { href: '/products?category=herbal-supplements', label: 'Herbal Supplements' },
+];
+
+const socialLinks = [
+    { href: 'https://instagram.com', label: 'Instagram', icon: InstagramIcon },
+    { href: 'https://facebook.com', label: 'Facebook', icon: FacebookIcon },
+    { href: 'https://twitter.com', label: 'Twitter', icon: TwitterIcon },
+];
 
 export default function Footer() {
-    return (<footer className="bg-slate-900 text-white">
+    return (
+        <footer className="bg-slate-900 text-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                {/* Top Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-x-8 gap-y-10">
 
-            {/* Top Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                    {/* Brand */}
+                    <div className="sm:col-span-2 lg:col-span-1">
+                        <Link href="/" className="inline-flex items-center gap-2.5 group">
+                            <div className="w-9 h-9 rounded-full bg-linear-to-br from-teal-50 to-emerald-50 flex items-center justify-center shrink-0 transition-colors">
+                                <Image  
+                                    src="/logo.png"
+                                    width={60}
+                                    height={60}
+                                    alt="NectarVeda Logo"
+                                    className="object-cover"
+                                />
+                            </div>
+                            <span className="text-xl font-extrabold tracking-tight text-white">
+                                NECTARVEDA
+                            </span>
+                        </Link>
 
-                {/* Brand */}
-                <div>
-                    <h2 className="text-3xl font-bold text-teal-400">
-                        NectarVeda
-                    </h2>
+                        <p className="mt-4 text-slate-400 leading-7 max-w-sm">
+                            Premium Ayurvedic products crafted with nature's finest ingredients
+                            for your wellness journey.
+                        </p>
+                    </div>
 
-                    <p className="mt-4 text-slate-400 leading-7">
-                        Premium Ayurvedic products crafted with nature's finest ingredients
-                        for your wellness journey.
+                    {/* Quick Links */}
+                    <div>
+                        <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
+                            Quick links
+                        </h3>
+                        <ul className="space-y-3">
+                            {quickLinks.map((link) => (
+                                <li key={link.href}>
+                                    <Link
+                                        href={link.href}
+                                        className="text-slate-400 hover:text-teal-300 transition-colors text-sm"
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Categories */}
+                    <div>
+                        <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
+                            Categories
+                        </h3>
+                        <ul className="space-y-3">
+                            {categories.map((cat) => (
+                                <li key={cat.href}>
+                                    <Link
+                                        href={cat.href}
+                                        className="text-slate-400 hover:text-teal-300 transition-colors text-sm"
+                                    >
+                                        {cat.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                        <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
+                            Contact us
+                        </h3>
+                        <div className="space-y-3.5">
+                            <a
+                                href="mailto:support@nectarveda.com"
+                                className="flex items-start gap-3 text-slate-400 hover:text-teal-300 transition-colors text-sm group"
+                            >
+                                <Mail size={16} className="mt-0.5 text-teal-400 group-hover:text-teal-300 transition-colors shrink-0" />
+                                <span className="break-all">support@nectarveda.com</span>
+                            </a>
+
+                            <a
+                                href="tel:+919876543210"
+                                className="flex items-start gap-3 text-slate-400 hover:text-teal-300 transition-colors text-sm group"
+                            >
+                                <Phone size={16} className="mt-0.5 text-teal-400 group-hover:text-teal-300 transition-colors shrink-0" />
+                                <span>+91 98765 43210</span>
+                            </a>
+
+                            <div className="flex items-start gap-3 text-slate-400 text-sm">
+                                <MapPin size={16} className="mt-0.5 text-teal-400 shrink-0" />
+                                <span>Dehradun, Uttarakhand</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* Bottom Bar */}
+                <div className="border-t border-slate-800 mt-12 pt-7 flex flex-col-reverse sm:flex-row items-center justify-between gap-5">
+
+                    <p className="text-slate-500 text-sm text-center sm:text-left">
+                        © 2026 NectarVeda. All rights reserved.
                     </p>
-                </div>
 
-                {/* Quick Links */}
-                <div>
-                    <h3 className="text-lg font-semibold mb-5">
-                        Quick Links
-                    </h3>
-
-                    <ul className="space-y-3">
-
-                        <li>
-                            <Link
-                                href="/"
-                                className="text-slate-400 hover:text-teal-400 transition"
+                    <div className="flex gap-2">
+                        {socialLinks.map(({ href, label, icon: Icon }) => (
+                            <a
+                                key={label}
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Visit our ${label} page`}
+                                className="w-9 h-9 rounded-full bg-slate-800 hover:bg-teal-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                             >
-                                Home
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/products"
-                                className="text-slate-400 hover:text-teal-400 transition"
-                            >
-                                Products
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/cart"
-                                className="text-slate-400 hover:text-teal-400 transition"
-                            >
-                                Cart
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/profile"
-                                className="text-slate-400 hover:text-teal-400 transition"
-                            >
-                                Profile
-                            </Link>
-                        </li>
-
-                    </ul>
-                </div>
-
-                {/* Categories */}
-                <div>
-                    <h3 className="text-lg font-semibold mb-5">
-                        Categories
-                    </h3>
-
-                    <ul className="space-y-3">
-
-                        <li className="text-slate-400">
-                            Hair Care
-                        </li>
-
-                        <li className="text-slate-400">
-                            Skin Care
-                        </li>
-
-                        <li className="text-slate-400">
-                            Health & Wellness
-                        </li>
-
-                        <li className="text-slate-400">
-                            Herbal Supplements
-                        </li>
-
-                    </ul>
-                </div>
-
-                {/* Contact */}
-                <div>
-
-                    <h3 className="text-lg font-semibold mb-5">
-                        Contact Us
-                    </h3>
-
-                    <div className="space-y-4">
-
-                        <div className="flex items-start gap-3 text-slate-400">
-                            <Mail size={18} className="mt-1 text-teal-400" />
-                            <span>support@nectarveda.com</span>
-                        </div>
-
-                        <div className="flex items-start gap-3 text-slate-400">
-                            <Phone size={18} className="mt-1 text-teal-400" />
-                            <span>+91 98765 43210</span>
-                        </div>
-
-                        <div className="flex items-start gap-3 text-slate-400">
-                            <MapPin size={18} className="mt-1 text-teal-400" />
-                            <span>Dehradun, Uttarakhand</span>
-                        </div>
-
+                                <Icon size={16} />
+                            </a>
+                        ))}
                     </div>
 
                 </div>
 
             </div>
-
-            {/* Bottom Bar */}
-            <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-
-                <div className="flex gap-6">
-
-                    <a
-                        href="#"
-                        className="text-slate-400 hover:text-teal-400 transition"
-                    >
-                        Instagram
-                    </a>
-
-                    <a
-                        href="#"
-                        className="text-slate-400 hover:text-teal-400 transition"
-                    >
-                        Facebook
-                    </a>
-
-                    <a
-                        href="#"
-                        className="text-slate-400 hover:text-teal-400 transition"
-                    >
-                        Twitter
-                    </a>
-
-                </div>
-
-                <p className="text-slate-500 text-sm">
-                    © 2026 NectarVeda. All rights reserved.
-                </p>
-
-            </div>
-
-        </div>
-
-    </footer>
+        </footer>
     );
-
 }
