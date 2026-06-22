@@ -24,3 +24,8 @@ export const updateOrderStatus = async (id, status) => {
     const response = await api.put(`/api/orders/${id}/status`, {status})
     return response.data
 }
+
+export const cancelOrder = async (id) => {
+    const response = await api.put(`/api/orders/${id}/cancel`)
+    return response.data
+}

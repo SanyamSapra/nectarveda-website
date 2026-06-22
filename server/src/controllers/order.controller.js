@@ -141,4 +141,40 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     });
 });
 
-export { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus }
+const cancelOrder = asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+        res.status(404);
+        throw new Error('Order not found');
+    }
+
+    if (order.user.toString() !== req.user._id.toString()) {
+        res.status(403);
+        throw new Error('Invalid User');
+    }
+
+    if (order.orderStatus !== 'processing') {
+        res.status(400);
+        throw new Error('Only processing orders can be cancelled');
+    }
+
+    for (const item of order.items) {
+        await Product.findByIdAndUpdate(
+            item.product,
+            { $inc: { stock: item.quantity } },
+            { new: true, runValidators: true }
+        );
+    }
+
+    order.orderStatus = 'cancelled';
+    await order.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Order cancelled successfully',
+        order
+    });
+});
+
+export { createOrder, getMyOrders, getOrderById, getAllOrders, updateOrderStatus, cancelOrder }
