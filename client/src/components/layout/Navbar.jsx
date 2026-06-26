@@ -7,6 +7,10 @@ import { usePathname } from 'next/navigation';
 import { ShoppingCart, User, LogOut, Search, Home, Store, Info, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
+import { motion, AnimatePresence } from 'motion/react';
+import { logoutUser } from '@/services/auth.service';
+import { buttonMotion, scaleFade } from '@/lib/animations';
+import { notify } from '@/lib/feedback';
 
 
 const navLinks = [
@@ -42,6 +46,18 @@ export default function Navbar() {
     }, []);
 
     const isActive = (href) => pathname === href;
+
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+            notify.info('Logged out successfully.');
+        } catch (error) {
+            notify.error(error);
+        } finally {
+            logout();
+            setProfileMenuOpen(false);
+        }
+    };
 
     return (
         <>
@@ -148,8 +164,12 @@ export default function Navbar() {
                                             <User size={20} strokeWidth={2.2} />
                                         </button>
 
+                                        <AnimatePresence>
                                         {profileMenuOpen && (
-                                            <div className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg py-2 z-50">
+                                            <motion.div
+                                                className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg py-2 z-50"
+                                                {...scaleFade}
+                                            >
                                                 <Link
                                                     href="/profile"
                                                     onClick={() => setProfileMenuOpen(false)}
@@ -167,25 +187,25 @@ export default function Navbar() {
                                                 </Link>
 
                                                 <button
-                                                    onClick={() => {
-                                                        logout();
-                                                        setProfileMenuOpen(false);
-                                                    }}
+                                                    onClick={handleLogout}
                                                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
                                                 >
                                                     <div className="flex items-center gap-2">Logout <LogOut size={18} strokeWidth={2.2} /></div>
                                                 </button>
-                                            </div>
+                                            </motion.div>
                                         )}
+                                        </AnimatePresence>
                                     </div>
                                 </>
                             ) : (
+                                <motion.div {...buttonMotion}>
                                 <Link
                                     href="/login"
                                     className="ml-2 px-6 py-2.5 rounded-full bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 shadow-md hover:shadow-lg transition-all duration-300"
                                 >
                                     Sign in
                                 </Link>
+                                </motion.div>
                             )}
                         </div>
 

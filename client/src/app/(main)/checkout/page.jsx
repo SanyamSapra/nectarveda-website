@@ -7,6 +7,9 @@ import { createOrder } from '@/services/order.service';
 import { useRouter } from 'next/navigation';
 import { MapPin, Plus, Check, AlertCircle, Loader2, ShoppingBag, ImageOff, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'motion/react';
+import { buttonMotion, fadeUp, scaleFade, staggerContainer, staggerItem } from '@/lib/animations';
+import { notify } from '@/lib/feedback';
 
 const LABEL_OPTIONS = ['Home', 'Work', 'Other'];
 
@@ -35,6 +38,7 @@ export default function CheckoutPage() {
                 if (defaultAddr) setSelectedAddressId(defaultAddr._id);
             } catch (err) {
                 console.log(err);
+                notify.error(err);
             } finally {
                 setLoadingAddresses(false);
             }
@@ -58,7 +62,11 @@ export default function CheckoutPage() {
 
     const handleAddNewAddress = async () => {
         const err = validateForm();
-        if (err) { setFormError(err); return; }
+        if (err) {
+            setFormError(err);
+            notify.info(err);
+            return;
+        }
 
         setSavingAddress(true);
         setFormError('');
@@ -68,9 +76,11 @@ export default function CheckoutPage() {
             setSelectedAddressId(data.addresses.at(-1)._id);
             setShowAddForm(false);
             setNewAddress(emptyForm);
+            notify.addressSaved();
         } catch (err) {
             console.log(err);
             setFormError('Failed to save address. Please try again.');
+            notify.error(err);
         } finally {
             setSavingAddress(false);
         }
@@ -79,6 +89,7 @@ export default function CheckoutPage() {
     const handlePlaceOrder = async () => {
         if (!selectedAddressId) {
             setOrderError('Please select a delivery address.');
+            notify.info('Please select a delivery address.');
             return;
         }
         const selectedAddress = addresses.find(a => a._id === selectedAddressId);
@@ -95,9 +106,11 @@ export default function CheckoutPage() {
                 }
             });
             await refreshCart();
+            notify.orderPlaced();
             router.push(`/orders/${data.order._id}`);
         } catch (err) {
             setOrderError('Failed to place order. Please try again.');
+            notify.error(err);
         } finally {
             setPlacingOrder(false);
         }
@@ -132,26 +145,28 @@ export default function CheckoutPage() {
     if (!cart?.items?.length) {
         return (
             <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-                <div className="text-center max-w-sm">
+                <motion.div className="text-center max-w-sm" {...fadeUp}>
                     <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-5">
                         <ShoppingBag className="text-teal-700" size={28} />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">Nothing to checkout</h2>
                     <p className="text-slate-500 mt-2">Your cart is empty. Add some products first.</p>
-                    <Link
-                        href="/products"
-                        className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-                    >
-                        Browse products
-                    </Link>
-                </div>
+                    <motion.div {...buttonMotion}>
+                        <Link
+                            href="/products"
+                            className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        >
+                            Browse products
+                        </Link>
+                    </motion.div>
+                </motion.div>
             </main>
         );
     }
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" {...fadeUp}>
 
                 {/* Header */}
                 <div className="mb-8 pb-5 border-b border-slate-200">
@@ -164,7 +179,7 @@ export default function CheckoutPage() {
                     </h1>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+                <motion.div className="grid lg:grid-cols-3 gap-6 lg:gap-8" variants={staggerContainer} initial="initial" animate="animate">
 
                     {/* Left — Delivery Address */}
                     <div className="lg:col-span-2 space-y-4">
@@ -193,13 +208,15 @@ export default function CheckoutPage() {
                         {addresses.map((addr) => {
                             const isSelected = selectedAddressId === addr._id;
                             return (
-                                <div
+                                <motion.div
                                     key={addr._id}
                                     onClick={() => { setSelectedAddressId(addr._id); setOrderError(''); }}
                                     className={`relative flex gap-4 bg-white p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
                                             ? 'border-teal-600 shadow-sm shadow-teal-100'
                                             : 'border-slate-200 hover:border-teal-300'
                                         }`}
+                                    variants={staggerItem}
+                                    whileHover={{ y: -2 }}
                                 >
                                     {/* Selection indicator */}
                                     <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'border-teal-600 bg-teal-600' : 'border-slate-300'
@@ -221,13 +238,13 @@ export default function CheckoutPage() {
                                         <p className="text-slate-500 text-sm">{addr.city}, {addr.state} — {addr.pincode}</p>
                                         <p className="text-slate-500 text-sm">+91 {addr.phone}</p>
                                     </div>
-                                </div>
+                                </motion.div>
                             );
                         })}
 
                         {/* Add new address */}
                         {showAddForm ? (
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6">
+                            <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6" {...scaleFade}>
                                 <h3 className="font-semibold text-slate-900 mb-5">New address</h3>
 
                                 {formError && (
@@ -240,7 +257,7 @@ export default function CheckoutPage() {
                                 {/* Label tabs */}
                                 <div className="flex gap-2 mb-4">
                                     {LABEL_OPTIONS.map(opt => (
-                                        <button
+                                        <motion.button
                                             key={opt}
                                             type="button"
                                             onClick={() => setNewAddress(prev => ({ ...prev, label: opt }))}
@@ -248,9 +265,10 @@ export default function CheckoutPage() {
                                                     ? 'bg-teal-700 text-white border-teal-700'
                                                     : 'bg-white text-slate-600 border-slate-200 hover:border-teal-400'
                                                 }`}
+                                            {...buttonMotion}
                                         >
                                             {opt}
-                                        </button>
+                                        </motion.button>
                                     ))}
                                 </div>
 
@@ -280,39 +298,42 @@ export default function CheckoutPage() {
                                 </div>
 
                                 <div className="flex gap-3 mt-5">
-                                    <button
+                                    <motion.button
                                         onClick={handleAddNewAddress}
                                         disabled={savingAddress}
                                         className="flex items-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                                        {...buttonMotion}
                                     >
                                         {savingAddress ? (
                                             <><Loader2 size={15} className="animate-spin" /> Saving...</>
                                         ) : (
                                             'Save address'
                                         )}
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
                                         onClick={() => { setShowAddForm(false); setFormError(''); setNewAddress(emptyForm); }}
                                         disabled={savingAddress}
                                         className="border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                                        {...buttonMotion}
                                     >
                                         Cancel
-                                    </button>
+                                    </motion.button>
                                 </div>
-                            </div>
+                            </motion.div>
                         ) : (
-                            <button
+                            <motion.button
                                 onClick={() => setShowAddForm(true)}
                                 className="flex items-center gap-2 w-full bg-white border-2 border-dashed border-slate-300 hover:border-teal-400 hover:bg-teal-50 text-slate-600 hover:text-teal-700 px-5 py-4 rounded-2xl text-sm font-medium transition-all"
+                                {...buttonMotion}
                             >
                                 <Plus size={17} />
                                 Add new address
-                            </button>
+                            </motion.button>
                         )}
                     </div>
 
                     {/* Right — Order Summary */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit lg:sticky lg:top-24">
+                    <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-fit lg:sticky lg:top-24" variants={staggerItem}>
                         <h2 className="text-lg font-bold text-slate-900 mb-5">
                             Order summary
                         </h2>
@@ -322,7 +343,7 @@ export default function CheckoutPage() {
                             {cart.items.map((item) => {
                                 const price = item.product.salePrice || item.product.price;
                                 return (
-                                    <div key={item.product._id} className="flex items-center gap-3">
+                                    <motion.div key={item.product._id} className="flex items-center gap-3" variants={staggerItem}>
                                         {item.product.images?.[0] ? (
                                             <img
                                                 src={item.product.images[0]}
@@ -341,7 +362,7 @@ export default function CheckoutPage() {
                                         <p className="text-sm font-semibold text-slate-900 tabular-nums shrink-0">
                                             ₹{(price * item.quantity).toLocaleString('en-IN')}
                                         </p>
-                                    </div>
+                                    </motion.div>
                                 );
                             })}
                         </div>
@@ -371,17 +392,18 @@ export default function CheckoutPage() {
                             </div>
                         )}
 
-                        <button
+                        <motion.button
                             onClick={handlePlaceOrder}
                             disabled={placingOrder || !selectedAddressId}
                             className="w-full mt-5 flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all"
+                            {...buttonMotion}
                         >
                             {placingOrder ? (
                                 <><Loader2 size={17} className="animate-spin" /> Placing order...</>
                             ) : (
                                 <>Place order <ChevronRight size={17} /></>
                             )}
-                        </button>
+                        </motion.button>
 
                         <Link
                             href="/cart"
@@ -389,9 +411,9 @@ export default function CheckoutPage() {
                         >
                             ← Back to cart
                         </Link>
-                    </div>
-                </div>
-            </div>
+                    </motion.div>
+                </motion.div>
+            </motion.div>
         </main>
     );
 }

@@ -5,6 +5,9 @@ import { removeFromCart, updateCart } from "@/services/cart.service"
 import { Plus, Minus, Trash2, ShoppingBag, ImageOff, Loader2 } from "lucide-react"
 import Link from "next/link";
 import { useCart } from '@/context/CartContext';
+import { motion } from "motion/react";
+import { buttonMotion, fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
+import { notify } from "@/lib/feedback";
 
 export default function CartPage() {
     const { cart, setCart, loading } = useCart();
@@ -27,7 +30,7 @@ export default function CartPage() {
     if (!cart?.items?.length) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-                <div className="text-center max-w-sm">
+                <motion.div className="text-center max-w-sm" {...fadeUp}>
                     <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-5">
                         <ShoppingBag className="text-teal-700" size={28} />
                     </div>
@@ -37,16 +40,18 @@ export default function CartPage() {
                     </h2>
 
                     <p className="text-slate-500 mt-2">
-                        Looks like you haven't added any products yet.
+                        Looks like you haven&apos;t added any products yet.
                     </p>
 
-                    <Link
-                        href="/products"
-                        className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-                    >
-                        Continue shopping
-                    </Link>
-                </div>
+                    <motion.div {...buttonMotion}>
+                        <Link
+                            href="/products"
+                            className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        >
+                            Continue shopping
+                        </Link>
+                    </motion.div>
+                </motion.div>
             </div>
         )
     }
@@ -71,8 +76,10 @@ export default function CartPage() {
                 quantity: newQuantity,
             });
             setCart(data.cart);
+            notify.cartUpdate();
         } catch (error) {
             console.error(error);
+            notify.error(error);
         } finally {
             setItemPending(productID, false);
         }
@@ -85,15 +92,17 @@ export default function CartPage() {
         try {
             const data = await removeFromCart(productId);
             setCart(data.cart);
+            notify.cartRemove();
         } catch (error) {
             console.error(error);
+            notify.error(error);
             setItemPending(productId, false);
         }
     };
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" {...fadeUp}>
 
                 <div className="mb-8 flex items-end justify-between gap-4 border-b border-slate-200 pb-5">
                     <div>
@@ -112,7 +121,7 @@ export default function CartPage() {
 
                 <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
                     {/* Left - Cart Items */}
-                    <div className="lg:col-span-2 flex flex-col gap-4">
+                    <motion.div className="lg:col-span-2 flex flex-col gap-4" variants={staggerContainer} initial="initial" animate="animate">
                         {cart.items.map((item) => {
                             const isPending = !!pendingItems[item.product._id];
                             const hasImageError = !!imageErrors[item.product._id];
@@ -120,9 +129,10 @@ export default function CartPage() {
                             const lineTotal = price * item.quantity;
 
                             return (
-                                <div
+                                <motion.div
                                     key={item.product._id}
                                     className={`flex flex-col sm:flex-row gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-200 ${isPending ? "opacity-60" : ""}`}
+                                    variants={staggerItem}
                                 >
                                     <div className="flex gap-4 sm:contents">
                                         {!hasImageError && item.product.images?.[0] ? (
@@ -141,14 +151,15 @@ export default function CartPage() {
                                         )}
 
                                         {/* Mobile-only: remove button beside image */}
-                                        <button
+                                        <motion.button
                                             onClick={() => handleRemove(item.product._id)}
                                             disabled={isPending}
                                             aria-label={`Remove ${item.product.name} from cart`}
                                             className="sm:hidden ml-auto self-start p-2 -mt-1 -mr-1 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+                                            {...buttonMotion}
                                         >
                                             <Trash2 size={18} />
-                                        </button>
+                                        </motion.button>
                                     </div>
 
                                     <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -158,28 +169,30 @@ export default function CartPage() {
                                             </h3>
 
                                             {/* Desktop-only: remove button top-right */}
-                                            <button
+                                            <motion.button
                                                 onClick={() => handleRemove(item.product._id)}
                                                 disabled={isPending}
                                                 aria-label={`Remove ${item.product.name} from cart`}
                                                 className="hidden sm:inline-flex shrink-0 p-2 -mt-1 -mr-1 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+                                                {...buttonMotion}
                                             >
                                                 <Trash2 size={18} />
-                                            </button>
+                                            </motion.button>
                                         </div>
 
                                         <div className="flex items-end justify-between gap-3 mt-3">
                                             <div className="flex items-center gap-1 rounded-xl border border-slate-200 p-1">
-                                                <button
+                                                <motion.button
                                                     disabled={item.quantity <= 1 || isPending}
                                                     onClick={() =>
                                                         handleUpdateQuantity(item.product._id, item.quantity - 1)
                                                     }
                                                     aria-label="Decrease quantity"
                                                     className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                                                    {...buttonMotion}
                                                 >
                                                     <Minus size={14} />
-                                                </button>
+                                                </motion.button>
 
                                                 <span className="w-7 text-center text-sm font-medium tabular-nums">
                                                     {isPending ? (
@@ -189,16 +202,17 @@ export default function CartPage() {
                                                     )}
                                                 </span>
 
-                                                <button
+                                                <motion.button
                                                     disabled={item.quantity >= item.product.stock || isPending}
                                                     onClick={() =>
                                                         handleUpdateQuantity(item.product._id, item.quantity + 1)
                                                     }
                                                     aria-label="Increase quantity"
                                                     className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+                                                    {...buttonMotion}
                                                 >
                                                     <Plus size={14} />
-                                                </button>
+                                                </motion.button>
                                             </div>
 
                                             <div className="text-right">
@@ -213,13 +227,13 @@ export default function CartPage() {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
 
                     {/* Right - Order Summary */}
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit lg:sticky lg:top-24">
+                    <motion.div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit lg:sticky lg:top-24" variants={staggerItem}>
 
                         <h2 className="text-lg font-bold text-slate-900 mb-5">
                             Order summary
@@ -244,12 +258,14 @@ export default function CartPage() {
                             </div>
                         </div>
 
-                        <Link
-                            href="/checkout"
-                            className="block w-full mt-6 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white py-3 rounded-xl font-semibold shadow-sm hover:shadow transition-all text-center"
-                        >
-                            Proceed to checkout
-                        </Link>
+                        <motion.div {...buttonMotion}>
+                            <Link
+                                href="/checkout"
+                                className="block w-full mt-6 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white py-3 rounded-xl font-semibold shadow-sm hover:shadow transition-all text-center"
+                            >
+                                Proceed to checkout
+                            </Link>
+                        </motion.div>
 
                         <Link
                             href="/products"
@@ -257,9 +273,9 @@ export default function CartPage() {
                         >
                             Continue shopping
                         </Link>
-                    </div>
+                    </motion.div>
                 </div>
-            </div>
+            </motion.div>
         </main>
     )
 }

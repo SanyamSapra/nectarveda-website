@@ -4,6 +4,9 @@ import { getMyOrders } from "@/services/order.service";
 import { useEffect, useState } from "react"
 import Link from "next/link";
 import { Package, AlertCircle, ShoppingBag, ChevronRight, ImageOff } from "lucide-react";
+import { motion } from "motion/react";
+import { buttonMotion, fadeUp, staggerContainer, staggerItem, cardHover } from "@/lib/animations";
+import { notify } from "@/lib/feedback";
 
 const STATUS_MAP = {
     pending:    { label: 'Order placed',   color: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -27,6 +30,7 @@ export default function OrderPage() {
             } catch (err) {
                 console.log(err);
                 setLoadError(true);
+                notify.error(err);
             } finally {
                 setLoading(false);
             }
@@ -67,19 +71,20 @@ export default function OrderPage() {
     if (loadError) {
         return (
             <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-                <div className="text-center max-w-sm">
+                <motion.div className="text-center max-w-sm" {...fadeUp}>
                     <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">
                         <AlertCircle className="text-red-500" size={28} />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900">Couldn't load orders</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">Couldn&apos;t load orders</h2>
                     <p className="text-slate-500 mt-2">Something went wrong fetching your orders.</p>
-                    <button
+                    <motion.button
                         onClick={() => window.location.reload()}
                         className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        {...buttonMotion}
                     >
                         Try again
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             </main>
         );
     }
@@ -87,28 +92,30 @@ export default function OrderPage() {
     if (!orders.length) {
         return (
             <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-                <div className="text-center max-w-sm">
+                <motion.div className="text-center max-w-sm" {...fadeUp}>
                     <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-5">
                         <ShoppingBag className="text-teal-700" size={28} />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">No orders yet</h2>
                     <p className="text-slate-500 mt-2">
-                        You haven't placed any orders. Start shopping to see them here.
+                        You haven&apos;t placed any orders. Start shopping to see them here.
                     </p>
-                    <Link
-                        href="/products"
-                        className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-                    >
-                        Browse products
-                    </Link>
-                </div>
+                    <motion.div {...buttonMotion}>
+                        <Link
+                            href="/products"
+                            className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        >
+                            Browse products
+                        </Link>
+                    </motion.div>
+                </motion.div>
             </main>
         );
     }
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <motion.div className="max-w-3xl mx-auto px-4 sm:px-6" {...fadeUp}>
 
                 {/* Header */}
                 <div className="mb-8 pb-5 border-b border-slate-200">
@@ -121,7 +128,7 @@ export default function OrderPage() {
                     </h1>
                 </div>
 
-                <div className="space-y-4">
+                <motion.div className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
                     {orders.map((order) => {
                         const orderId = order._id?.length >= 8
                             ? order._id.slice(-8).toUpperCase()
@@ -142,8 +149,12 @@ export default function OrderPage() {
                         const itemCount = order.items.length;
 
                         return (
-                            <Link
+                            <motion.div
                                 key={order._id}
+                                variants={staggerItem}
+                                whileHover={cardHover}
+                            >
+                            <Link
                                 href={`/orders/${order._id}`}
                                 className="group block bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-teal-200 hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
                             >
@@ -220,10 +231,11 @@ export default function OrderPage() {
                                     </div>
                                 </div>
                             </Link>
+                            </motion.div>
                         );
                     })}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </main>
     );
 }

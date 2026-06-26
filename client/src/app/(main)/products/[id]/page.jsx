@@ -2,10 +2,13 @@
 
 import { useState, useEffect, use } from 'react';
 import { getProductByID } from '@/services/product.service';
-import { Plus, Minus, ChevronLeft, ChevronRight, ShoppingCart, Tag, Check, AlertCircle, ImageOff } from 'lucide-react';
+import { Plus, Minus, ChevronLeft, ChevronRight, ShoppingCart, Tag, AlertCircle, ImageOff } from 'lucide-react';
 import { addToCart } from '@/services/cart.service';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
+import { motion } from 'motion/react';
+import { buttonMotion, cardHover, fadeUp, scaleFade, staggerContainer, staggerItem } from '@/lib/animations';
+import { notify } from '@/lib/feedback';
 
 export default function ProductDetailPage({ params }) {
     const { id } = use(params);
@@ -15,8 +18,6 @@ export default function ProductDetailPage({ params }) {
     const [selectedImage, setSelectedImage] = useState(0);
     const [quantity, setQuantity] = useState(1);
     const [addingToCart, setAddingToCart] = useState(false);
-    const [cartSuccess, setCartSuccess] = useState(false);
-    const [cartError, setCartError] = useState('');
     const [imageError, setImageError] = useState(false);
     const { refreshCart } = useCart();
 
@@ -42,6 +43,7 @@ export default function ProductDetailPage({ params }) {
     }, [id]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuantity(1);
         setSelectedImage(0);
         setImageError(false);
@@ -61,14 +63,12 @@ export default function ProductDetailPage({ params }) {
 
     const handleAddToCart = async () => {
         setAddingToCart(true);
-        setCartError('');
         try {
             await addToCart({ product: product._id, quantity });
             await refreshCart();
-            setCartSuccess(true);
-            setTimeout(() => setCartSuccess(false), 2000);
+            notify.cartAdd(product.name);
         } catch (error) {
-            setCartError('Failed to add to cart. Please try again.');
+            notify.error(error);
         } finally {
             setAddingToCart(false);
         }
@@ -127,7 +127,7 @@ export default function ProductDetailPage({ params }) {
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" {...fadeUp}>
 
                 {/* Breadcrumb */}
                 <Link
@@ -138,11 +138,11 @@ export default function ProductDetailPage({ params }) {
                     Back to shop
                 </Link>
 
-                <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+                <motion.div className="grid lg:grid-cols-2 gap-10 lg:gap-16" variants={staggerContainer} initial="initial" animate="animate">
 
                     {/* Product Images */}
-                    <div>
-                        <div className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm aspect-square">
+                    <motion.div variants={staggerItem}>
+                        <motion.div className="relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm aspect-square" {...scaleFade}>
                             {product.images?.[selectedImage] && !imageError ? (
                                 <img
                                     src={product.images[selectedImage]}
@@ -166,29 +166,31 @@ export default function ProductDetailPage({ params }) {
 
                             {product.images?.length > 1 && (
                                 <>
-                                    <button
+                                    <motion.button
                                         onClick={prevImage}
                                         className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-slate-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition-all"
                                         aria-label="Previous image"
+                                        {...buttonMotion}
                                     >
                                         <ChevronLeft size={18} />
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
                                         onClick={nextImage}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white border border-slate-200 rounded-full w-9 h-9 flex items-center justify-center shadow-sm transition-all"
                                         aria-label="Next image"
+                                        {...buttonMotion}
                                     >
                                         <ChevronRight size={18} />
-                                    </button>
+                                    </motion.button>
                                 </>
                             )}
-                        </div>
+                        </motion.div>
 
                         {/* Dot indicators */}
                         {product.images?.length > 1 && (
                             <div className="flex justify-center gap-2 mt-4">
                                 {product.images.map((_, index) => (
-                                    <button
+                                    <motion.button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         className={`h-2 rounded-full transition-all duration-200 ${selectedImage === index
@@ -196,6 +198,7 @@ export default function ProductDetailPage({ params }) {
                                             : 'w-2 bg-slate-300'
                                             }`}
                                         aria-label={`Image ${index + 1}`}
+                                        {...buttonMotion}
                                     />
                                 ))}
                             </div>
@@ -205,27 +208,29 @@ export default function ProductDetailPage({ params }) {
                         {product.images?.length > 1 && (
                             <div className="flex gap-3 mt-4 flex-wrap">
                                 {product.images.map((image, index) => (
-                                    <button
+                                    <motion.button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 shrink-0 ${selectedImage === index
                                             ? 'border-teal-700'
                                             : 'border-slate-200 hover:border-teal-400'
                                             }`}
+                                        whileHover={cardHover}
+                                        whileTap={{ scale: 0.98 }}
                                     >
                                         <img
                                             src={image}
                                             alt={`${product.name} ${index + 1}`}
                                             className="w-full h-full object-cover"
                                         />
-                                    </button>
+                                    </motion.button>
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </motion.div>
 
                     {/* Product Details */}
-                    <div className="flex flex-col">
+                    <motion.div className="flex flex-col" variants={staggerItem}>
 
                         {/* Category */}
                         {product.category?.name && (
@@ -293,62 +298,46 @@ export default function ProductDetailPage({ params }) {
                         <div className="flex items-center gap-4">
                             <span className="text-slate-600 text-sm font-medium">Quantity</span>
                             <div className={`flex items-center border border-slate-200 rounded-xl overflow-hidden ${product.stock === 0 ? 'opacity-50' : ''}`}>
-                                <button
+                                <motion.button
                                     disabled={product.stock === 0 || quantity <= 1}
                                     onClick={decrease}
                                     aria-label="Decrease quantity"
                                     className="px-3.5 py-2 bg-slate-50 hover:bg-teal-50 hover:text-teal-700 transition-colors disabled:cursor-not-allowed disabled:hover:bg-slate-50 disabled:hover:text-inherit"
+                                    {...buttonMotion}
                                 >
                                     <Minus size={15} />
-                                </button>
+                                </motion.button>
                                 <span className="px-5 py-2 text-slate-900 font-semibold min-w-[3rem] text-center tabular-nums">
                                     {quantity}
                                 </span>
-                                <button
+                                <motion.button
                                     disabled={product.stock === 0 || quantity >= product.stock}
                                     onClick={increase}
                                     aria-label="Increase quantity"
                                     className="px-3.5 py-2 bg-slate-50 hover:bg-teal-50 hover:text-teal-700 transition-colors disabled:cursor-not-allowed disabled:hover:bg-slate-50 disabled:hover:text-inherit"
+                                    {...buttonMotion}
                                 >
                                     <Plus size={15} />
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
 
                         {/* Add to Cart */}
                         <div className="mt-8 flex flex-col gap-3">
-                            <button
+                            <motion.button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0 || addingToCart}
-                                className={`flex items-center justify-center gap-2 font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 w-full sm:w-fit ${cartSuccess
-                                        ? 'bg-emerald-600 text-white'
-                                        : 'bg-teal-700 hover:bg-teal-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white'
-                                    }`}
+                                className="flex items-center justify-center gap-2 font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 w-full sm:w-fit bg-teal-700 hover:bg-teal-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white"
+                                {...buttonMotion}
                             >
-                                {cartSuccess ? (
-                                    <>
-                                        <Check size={18} />
-                                        Added to cart
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShoppingCart size={18} />
-                                        {addingToCart ? 'Adding...' : 'Add to cart'}
-                                    </>
-                                )}
-                            </button>
-
-                            {cartError && (
-                                <p className="flex items-center gap-1.5 text-sm text-red-600">
-                                    <AlertCircle size={14} />
-                                    {cartError}
-                                </p>
-                            )}
+                                <ShoppingCart size={18} />
+                                {addingToCart ? 'Adding...' : 'Add to cart'}
+                            </motion.button>
                         </div>
 
-                    </div>
-                </div>
-            </div>
+                    </motion.div>
+                </motion.div>
+            </motion.div>
         </main>
     );
 }

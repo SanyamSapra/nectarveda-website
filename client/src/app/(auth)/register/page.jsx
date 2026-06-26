@@ -4,6 +4,9 @@ import { useState } from "react"
 import { registerUser } from "@/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
+import { notify } from "@/lib/feedback";
 
 export default function RegisterPage() {
     const { login } = useAuth()
@@ -24,17 +27,19 @@ export default function RegisterPage() {
         try {
             const data = await registerUser(formData);
             login(data)
+            notify.info('Account created successfully.');
             router.push('/')
         }
         catch (error) {
             console.log(error)
+            notify.error(error);
         }
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4">
 
-            <div className="w-full max-w-md">
+            <motion.div className="w-full max-w-md" {...fadeUp}>
 
                 {/* Brand */}
                 <div className="text-center mb-8">
@@ -48,7 +53,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Register Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8">
+                <motion.div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8" {...scaleFade}>
 
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold text-slate-900">
@@ -114,12 +119,13 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Button */}
-                        <button
+                        <motion.button
                             type="submit"
                             className="w-full bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                            {...buttonMotion}
                         >
                             Create Account
-                        </button>
+                        </motion.button>
 
                     </form>
 
@@ -134,9 +140,9 @@ export default function RegisterPage() {
                         </a>
                     </div>
 
-                </div>
+                </motion.div>
 
-            </div>
+            </motion.div>
 
         </div>
     )

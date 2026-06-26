@@ -9,6 +9,8 @@ import {
     ArrowRight,
     CheckCircle2
 } from "lucide-react";
+import { motion } from "motion/react";
+import { buttonMotion, cardHover, fadeUp, staggerContainer, staggerItem } from "@/lib/animations";
 
 export default function AboutPage() {
     const features = [
@@ -54,11 +56,11 @@ export default function AboutPage() {
     ];
 
     return (
-        <main className="min-h-screen bg-slate-50">
+        <motion.main className="min-h-screen bg-slate-50" {...fadeUp}>
 
             {/* Hero Section */}
             <section className="relative overflow-hidden">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 text-center">
+                <motion.div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 text-center" {...fadeUp}>
 
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 border border-teal-100 text-teal-700 text-sm font-medium mb-6">
                         <Leaf size={16} />
@@ -78,22 +80,26 @@ export default function AboutPage() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
-                        <Link
-                            href="/products"
-                            className="inline-flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white px-8 py-4 rounded-xl font-semibold transition-all"
-                        >
-                            Explore Products
-                            <ArrowRight size={18} />
-                        </Link>
+                        <motion.div {...buttonMotion}>
+                            <Link
+                                href="/products"
+                                className="inline-flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white px-8 py-4 rounded-xl font-semibold transition-all"
+                            >
+                                Explore Products
+                                <ArrowRight size={18} />
+                            </Link>
+                        </motion.div>
 
-                        <Link
-                            href="/contact"
-                            className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-300 bg-white text-slate-700 hover:border-teal-300 hover:text-teal-700 transition-all"
-                        >
-                            Contact Us
-                        </Link>
+                        <motion.div {...buttonMotion}>
+                            <Link
+                                href="/contact"
+                                className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-300 bg-white text-slate-700 hover:border-teal-300 hover:text-teal-700 transition-all"
+                            >
+                                Contact Us
+                            </Link>
+                        </motion.div>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* Story Section */}
@@ -149,14 +155,16 @@ export default function AboutPage() {
                         </p>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <motion.div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.2 }}>
                         {features.map((feature, index) => {
                             const Icon = feature.icon;
 
                             return (
-                                <div
+                                <motion.div
                                     key={index}
                                     className="bg-slate-50 border border-slate-200 rounded-2xl p-6"
+                                    variants={staggerItem}
+                                    whileHover={cardHover}
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
                                         <Icon
@@ -172,10 +180,10 @@ export default function AboutPage() {
                                     <p className="text-sm text-slate-600 leading-relaxed">
                                         {feature.description}
                                     </p>
-                                </div>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
 
                 </div>
             </section>
@@ -190,11 +198,13 @@ export default function AboutPage() {
                         </h2>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <motion.div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.2 }}>
                         {values.map((value) => (
-                            <div
+                            <motion.div
                                 key={value}
                                 className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center"
+                                variants={staggerItem}
+                                whileHover={cardHover}
                             >
                                 <CheckCircle2
                                     className="mx-auto text-teal-700 mb-3"
@@ -204,9 +214,9 @@ export default function AboutPage() {
                                 <h3 className="font-semibold text-slate-900">
                                     {value}
                                 </h3>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
 
                 </div>
             </section>
@@ -221,11 +231,13 @@ export default function AboutPage() {
                         </h2>
                     </div>
 
-                    <div className="grid md:grid-cols-5 gap-6">
+                    <motion.div className="grid md:grid-cols-5 gap-6" variants={staggerContainer} initial="initial" whileInView="animate" viewport={{ once: true, amount: 0.2 }}>
                         {process.map((step, index) => (
-                            <div
+                            <motion.div
                                 key={step}
                                 className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center"
+                                variants={staggerItem}
+                                whileHover={cardHover}
                             >
                                 <div className="w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center mx-auto mb-4 font-semibold">
                                     {index + 1}
@@ -234,9 +246,9 @@ export default function AboutPage() {
                                 <p className="font-medium text-slate-900">
                                     {step}
                                 </p>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
 
                 </div>
             </section>
@@ -303,19 +315,21 @@ export default function AboutPage() {
                             tradition, and a commitment to your well-being.
                         </p>
 
-                        <Link
-                            href="/products"
-                            className="inline-flex items-center gap-2 mt-8 bg-white text-teal-700 hover:bg-slate-100 px-8 py-4 rounded-xl font-semibold transition-all"
-                        >
-                            Browse Products
-                            <ArrowRight size={18} />
-                        </Link>
+                        <motion.div {...buttonMotion}>
+                            <Link
+                                href="/products"
+                                className="inline-flex items-center gap-2 mt-8 bg-white text-teal-700 hover:bg-slate-100 px-8 py-4 rounded-xl font-semibold transition-all"
+                            >
+                                Browse Products
+                                <ArrowRight size={18} />
+                            </Link>
+                        </motion.div>
 
                     </div>
 
                 </div>
             </section>
 
-        </main>
+        </motion.main>
     );
 }

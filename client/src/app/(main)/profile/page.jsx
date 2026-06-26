@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { getProfile, updateProfile } from "@/services/user.service";
 import Link from "next/link";
-import { Pencil, Check, AlertCircle, Loader2, Package, Mail, Phone as PhoneIcon, User as UserIcon } from "lucide-react";
+import { Pencil, AlertCircle, Loader2, Package, Mail, Phone as PhoneIcon, User as UserIcon } from "lucide-react";
+import { motion } from "motion/react";
+import { buttonMotion, fadeUp, scaleFade, staggerContainer, staggerItem } from "@/lib/animations";
+import { notify } from "@/lib/feedback";
 
 export default function ProfilePage() {
     const [error, setError] = useState('');
@@ -13,7 +16,6 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
     const [saving, setSaving] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -25,6 +27,7 @@ export default function ProfilePage() {
             } catch (error) {
                 console.log(error);
                 setLoadError(true);
+                notify.error(error);
             } finally {
                 setLoading(false);
             }
@@ -50,10 +53,12 @@ export default function ProfilePage() {
     const handleSave = async () => {
         if (!formData.name.trim()) {
             setError('Name cannot be empty');
+            notify.info('Name cannot be empty');
             return;
         }
         if (formData.phone && !/^\d{10}$/.test(formData.phone)) {
             setError('Phone number must be exactly 10 digits');
+            notify.info('Phone number must be exactly 10 digits');
             return;
         }
 
@@ -62,11 +67,11 @@ export default function ProfilePage() {
             const data = await updateProfile(formData);
             setProfile(data.user);
             setIsEditing(false);
-            setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 2500);
+            notify.profileSaved();
         } catch (error) {
             console.log(error);
             setError('Could not save changes. Please try again.');
+            notify.error(error);
         } finally {
             setSaving(false);
         }
@@ -112,30 +117,31 @@ export default function ProfilePage() {
     if (loadError || !profile) {
         return (
             <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-                <div className="text-center max-w-sm">
+                <motion.div className="text-center max-w-sm" {...fadeUp}>
                     <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-5">
                         <AlertCircle className="text-red-500" size={28} />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900">
-                        Couldn't load your profile
+                        Couldn&apos;t load your profile
                     </h2>
                     <p className="text-slate-500 mt-2">
                         Something went wrong. Please try again.
                     </p>
-                    <button
+                    <motion.button
                         onClick={() => window.location.reload()}
                         className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                        {...buttonMotion}
                     >
                         Try again
-                    </button>
-                </div>
+                    </motion.button>
+                </motion.div>
             </main>
         );
     }
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-2xl mx-auto px-4 sm:px-6">
+            <motion.div className="max-w-2xl mx-auto px-4 sm:px-6" {...fadeUp}>
 
                 <div className="mb-8 pb-5 border-b border-slate-200">
                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-700 uppercase mb-1.5">
@@ -147,15 +153,7 @@ export default function ProfilePage() {
                     </h1>
                 </div>
 
-                {/* Save success toast */}
-                {saveSuccess && (
-                    <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-xl mb-5">
-                        <Check size={16} />
-                        Profile updated successfully
-                    </div>
-                )}
-
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" {...scaleFade}>
 
                     {/* Gradient header band with avatar */}
                     <div className="relative bg-gradient-to-br from-teal-700 via-teal-600 to-emerald-700 px-6 sm:px-8 py-7 sm:py-8">
@@ -178,7 +176,7 @@ export default function ProfilePage() {
                     <div className="p-6 sm:p-8">
 
                         {isEditing ? (
-                            <div className="space-y-5">
+                            <motion.div className="space-y-5" {...fadeUp}>
                                 {error && (
                                     <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
                                         <AlertCircle size={16} className="shrink-0" />
@@ -228,10 +226,11 @@ export default function ProfilePage() {
                                 </div>
 
                                 <div className="flex gap-3 pt-2">
-                                    <button
+                                    <motion.button
                                         onClick={handleSave}
                                         disabled={saving}
                                         className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold transition-colors min-w-[140px]"
+                                        {...buttonMotion}
                                     >
                                         {saving ? (
                                             <>
@@ -241,28 +240,29 @@ export default function ProfilePage() {
                                         ) : (
                                             'Save changes'
                                         )}
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
                                         onClick={handleCancel}
                                         disabled={saving}
                                         className="border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-semibold transition-colors"
+                                        {...buttonMotion}
                                     >
                                         Cancel
-                                    </button>
+                                    </motion.button>
                                 </div>
-                            </div>
+                            </motion.div>
                         ) : (
-                            <div>
+                            <motion.div variants={staggerContainer} initial="initial" animate="animate">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100">
+                                    <motion.div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100" variants={staggerItem}>
                                         <p className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
                                             <UserIcon size={12} />
                                             Full name
                                         </p>
                                         <p className="text-slate-900 font-medium">{profile.name}</p>
-                                    </div>
+                                    </motion.div>
 
-                                    <div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100">
+                                    <motion.div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100" variants={staggerItem}>
                                         <p className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
                                             <PhoneIcon size={12} />
                                             Phone number
@@ -270,44 +270,47 @@ export default function ProfilePage() {
                                         <p className="text-slate-900 font-medium">
                                             {profile.phone || <span className="text-slate-400 italic font-normal">Not added</span>}
                                         </p>
-                                    </div>
+                                    </motion.div>
 
-                                    <div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100 sm:col-span-2">
+                                    <motion.div className="bg-slate-50 rounded-xl px-4 py-3.5 border border-slate-100 sm:col-span-2" variants={staggerItem}>
                                         <p className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
                                             <Mail size={12} />
                                             Email address
                                         </p>
                                         <p className="text-slate-900 font-medium truncate">{profile.email}</p>
-                                    </div>
+                                    </motion.div>
                                 </div>
 
-                                <button
+                                <motion.button
                                     onClick={handleEditClick}
                                     className="flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-semibold transition-colors mt-6"
+                                    {...buttonMotion}
                                 >
                                     <Pencil size={15} />
                                     Edit profile
-                                </button>
-                            </div>
+                                </motion.button>
+                            </motion.div>
                         )}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* My Orders card */}
-                <Link
-                    href="/orders"
-                    className="flex items-center justify-between bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mt-5 hover:shadow-md hover:border-teal-200 transition-all group"
-                >
-                    <span className="flex items-center gap-3 font-semibold text-slate-900">
-                        <span className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700 group-hover:bg-teal-100 transition-colors">
-                            <Package size={17} />
+                <motion.div whileHover={{ y: -3 }} transition={{ duration: 0.22 }}>
+                    <Link
+                        href="/orders"
+                        className="flex items-center justify-between bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mt-5 hover:shadow-md hover:border-teal-200 transition-all group"
+                    >
+                        <span className="flex items-center gap-3 font-semibold text-slate-900">
+                            <span className="w-9 h-9 rounded-lg bg-teal-50 flex items-center justify-center text-teal-700 group-hover:bg-teal-100 transition-colors">
+                                <Package size={17} />
+                            </span>
+                            My orders
                         </span>
-                        My orders
-                    </span>
-                    <span className="text-teal-700">→</span>
-                </Link>
+                        <span className="text-teal-700">→</span>
+                    </Link>
+                </motion.div>
 
-            </div>
+            </motion.div>
         </main>
     );
 }

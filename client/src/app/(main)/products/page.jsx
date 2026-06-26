@@ -5,6 +5,9 @@ import { getProducts } from '@/services/product.service';
 import { getCategories } from '@/services/category.service';
 import Link from 'next/link';
 import { Leaf, ImageOff, AlertCircle, SearchX } from 'lucide-react';
+import { motion } from 'motion/react';
+import { buttonMotion, cardHover, fadeUp, staggerContainer, staggerItem } from '@/lib/animations';
+import { notify } from '@/lib/feedback';
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
@@ -27,6 +30,7 @@ export default function ProductsPage() {
             } catch (err) {
                 console.error(err);
                 setError('We couldn\'t load the products right now.');
+                notify.error(err);
             } finally {
                 setLoading(false);
             }
@@ -46,10 +50,12 @@ export default function ProductsPage() {
                         <div className="h-3 w-20 bg-slate-200 rounded-full animate-pulse mb-3" />
                         <div className="h-9 w-56 bg-slate-200 rounded-lg animate-pulse" />
                     </div>
-                    <div className="flex flex-wrap gap-3 mb-12">
-                        {[0, 1, 2, 3].map((i) => (
-                            <div key={i} className="h-10 w-28 bg-white border border-slate-200 rounded-full animate-pulse" />
-                        ))}
+                    <div className="-mx-4 mb-10 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:mb-12 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+                        <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
+                            {[0, 1, 2, 3].map((i) => (
+                                <div key={i} className="h-10 w-28 shrink-0 bg-white border border-slate-200 rounded-full animate-pulse" />
+                            ))}
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {Array.from({ length: 8 }).map((_, i) => (
@@ -94,7 +100,7 @@ export default function ProductsPage() {
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" {...fadeUp}>
 
                 {/* Header */}
                 <div className="mb-8 pb-5 border-b border-slate-200">
@@ -111,34 +117,38 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Category Filters */}
-                <div className="flex flex-wrap gap-3 mb-10">
-                    <button
-                        onClick={() => setSelectedCategory('all')}
-                        className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${selectedCategory === 'all'
-                            ? 'bg-teal-700 text-white shadow-sm'
-                            : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-700'
-                            }`}
-                    >
-                        All products
-                    </button>
-
-                    {categories.map((cat) => (
-                        <button
-                            key={cat._id}
-                            onClick={() => setSelectedCategory(cat._id)}
-                            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${selectedCategory === cat._id
+                <div className="-mx-4 mb-8 overflow-x-auto px-4 pb-2 scrollbar-none sm:mx-0 sm:mb-10 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+                    <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
+                        <motion.button
+                            onClick={() => setSelectedCategory('all')}
+                            className={`shrink-0 whitespace-nowrap px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 sm:px-5 ${selectedCategory === 'all'
                                 ? 'bg-teal-700 text-white shadow-sm'
                                 : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-700'
                                 }`}
+                            {...buttonMotion}
                         >
-                            {cat.name}
-                        </button>
-                    ))}
+                            All products
+                        </motion.button>
+
+                        {categories.map((cat) => (
+                            <motion.button
+                                key={cat._id}
+                                onClick={() => setSelectedCategory(cat._id)}
+                                className={`shrink-0 whitespace-nowrap px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 sm:px-5 ${selectedCategory === cat._id
+                                    ? 'bg-teal-700 text-white shadow-sm'
+                                    : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-700'
+                                    }`}
+                                {...buttonMotion}
+                            >
+                                {cat.name}
+                            </motion.button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Empty state */}
                 {filteredProducts.length === 0 ? (
-                    <div className="text-center py-20">
+                    <motion.div className="text-center py-20" {...fadeUp}>
                         <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-5">
                             <SearchX className="text-slate-400" size={28} />
                         </div>
@@ -149,26 +159,32 @@ export default function ProductsPage() {
                             Try a different category or check back soon.
                         </p>
                         {selectedCategory !== 'all' && (
-                            <button
+                            <motion.button
                                 onClick={() => setSelectedCategory('all')}
                                 className="inline-block mt-5 text-teal-700 font-medium hover:text-teal-800 transition-colors"
+                                {...buttonMotion}
                             >
                                 View all products
-                            </button>
+                            </motion.button>
                         )}
-                    </div>
+                    </motion.div>
                 ) : (
                     /* Products Grid */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+                    <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8" variants={staggerContainer} initial="initial" animate="animate">
                         {filteredProducts.map((product) => {
                             const hasDiscount = product.salePrice && product.salePrice < product.price;
                             const displayPrice = product.salePrice || product.price;
 
                             return (
-                                <Link
+                                <motion.div
                                     key={product._id}
+                                    variants={staggerItem}
+                                    whileHover={cardHover}
+                                    className="h-full"
+                                >
+                                <Link
                                     href={`/products/${product._id}`}
-                                    className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                                    className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                                 >
                                     {/* Product Image */}
                                     <div className="relative bg-slate-100 aspect-square overflow-hidden">
@@ -177,7 +193,7 @@ export default function ProductsPage() {
                                                 src={product.images[0]}
                                                 alt={product.name}
                                                 loading="lazy"
-                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
@@ -207,7 +223,7 @@ export default function ProductsPage() {
                                             {product.name}
                                         </h3>
 
-                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-[2.5rem]">
+                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
                                             {product.description}
                                         </p>
 
@@ -230,11 +246,12 @@ export default function ProductsPage() {
                                         </div>
                                     </div>
                                 </Link>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
                 )}
-            </div>
+            </motion.div>
         </main>
     );
 }

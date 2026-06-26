@@ -8,6 +8,9 @@ import {
     CheckCircle2, MapPin, Package, ImageOff,
     AlertCircle, ArrowRight, ShoppingBag, XCircle, Clock, Loader2
 } from "lucide-react";
+import { motion } from "motion/react";
+import { buttonMotion, fadeUp, scaleFade, staggerContainer, staggerItem } from "@/lib/animations";
+import { notify } from "@/lib/feedback";
 
 // --- CONFIGURATION CONSTANTS ---
 // Keeping these outside the component is good practice. It prevents them from being recreated on every render.
@@ -58,6 +61,7 @@ export default function OrderDetailPage() {
             } catch (err) {
                 console.error("Failed to fetch order:", err);
                 setLoadError(true);
+                notify.error(err);
             } finally {
                 setLoading(false);
             }
@@ -76,8 +80,10 @@ export default function OrderDetailPage() {
         try {
             const data = await cancelOrder(id);
             if (data?.order) setOrder(data.order);
+            notify.orderCancelled();
         } catch (err) {
             console.error("Failed to cancel order:", err);
+            notify.error(err);
         } finally {
             setCancelling(false);
             setCancelConfirm(false);
@@ -104,10 +110,10 @@ export default function OrderDetailPage() {
 
     return (
         <main className="min-h-screen bg-slate-50 pt-10 pb-20">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <motion.div className="max-w-3xl mx-auto px-4 sm:px-6" {...fadeUp}>
 
                 {/* Status Hero Section */}
-                <div className="text-center mb-8">
+                <motion.div className="text-center mb-8" {...scaleFade}>
                     <div className="relative w-20 h-20 mx-auto mb-5">
                         {!isCancelled && (
                             <div className="absolute inset-0 rounded-full bg-emerald-100 animate-[ping_1s_ease-out_1] opacity-30" />
@@ -129,11 +135,11 @@ export default function OrderDetailPage() {
                             {status.label}
                         </span>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="space-y-4">
+                <motion.div className="space-y-4" variants={staggerContainer} initial="initial" animate="animate">
                     {/* Shipping Address */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" variants={staggerItem}>
                         <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-100">
                             <MapPin size={14} className="text-teal-700" />
                             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivering to</h2>
@@ -145,17 +151,17 @@ export default function OrderDetailPage() {
                             </p>
                             <p className="text-slate-500 text-sm mt-0.5">+91 {order.shippingAddress.phone}</p>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Order Items */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" variants={staggerItem}>
                         <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-100">
                             <Package size={14} className="text-teal-700" />
                             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Items ordered</h2>
                         </div>
                         <div className="divide-y divide-slate-100">
                             {order.items.map((item, index) => (
-                                <div key={item._id || item.product?._id || index} className="flex items-center gap-4 px-5 py-4">
+                                <motion.div key={item._id || item.product?._id || index} className="flex items-center gap-4 px-5 py-4" variants={staggerItem}>
                                     <ProductImage src={item.product.images?.[0]} alt={item.product.name} />
 
                                     <div className="flex-1 min-w-0">
@@ -165,13 +171,13 @@ export default function OrderDetailPage() {
                                     <p className="font-semibold text-slate-900 tabular-nums shrink-0">
                                         ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                                     </p>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Payment Summary */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <motion.div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" variants={staggerItem}>
                         <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-100">
                             <ShoppingBag size={14} className="text-teal-700" />
                             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Payment details</h2>
@@ -192,17 +198,21 @@ export default function OrderDetailPage() {
                                 <span className="ml-auto text-sm font-semibold text-slate-800">Cash on delivery</span>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                    <Link href="/products" className="flex-1 flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white py-3.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all">
-                        Continue shopping <ArrowRight size={17} />
-                    </Link>
-                    <Link href="/orders" className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-700 py-3.5 rounded-xl font-semibold transition-all">
-                        View all orders
-                    </Link>
+                    <motion.div className="flex-1" {...buttonMotion}>
+                        <Link href="/products" className="flex items-center justify-center gap-2 bg-teal-700 hover:bg-teal-800 text-white py-3.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all">
+                            Continue shopping <ArrowRight size={17} />
+                        </Link>
+                    </motion.div>
+                    <motion.div className="flex-1" {...buttonMotion}>
+                        <Link href="/orders" className="flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-teal-300 text-slate-700 hover:text-teal-700 py-3.5 rounded-xl font-semibold transition-all">
+                            View all orders
+                        </Link>
+                    </motion.div>
                 </div>
 
                 {/* Cancel Order Block */}
@@ -214,34 +224,37 @@ export default function OrderDetailPage() {
                                     Are you sure? This action cannot be undone.
                                 </p>
                                 <div className="flex gap-3">
-                                    <button
+                                    <motion.button
                                         onClick={handleCancel}
                                         disabled={cancelling}
                                         className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                                        {...buttonMotion}
                                     >
                                         {cancelling ? <><Loader2 size={15} className="animate-spin" /> Cancelling...</> : 'Yes, cancel order'}
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
                                         onClick={() => setCancelConfirm(false)}
                                         disabled={cancelling}
                                         className="flex-1 border border-slate-300 text-slate-700 hover:bg-slate-50 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+                                        {...buttonMotion}
                                     >
                                         Keep order
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
                         ) : (
-                            <button
+                            <motion.button
                                 onClick={handleCancel}
                                 className="w-full py-3 rounded-xl bg-white border border-slate-200 text-red-600 font-medium hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow"
+                                {...buttonMotion}
                             >
                                 Cancel this order
-                            </button>
+                            </motion.button>
                         )}
                     </div>
                 )}
 
-            </div>
+            </motion.div>
         </main>
     );
 }
@@ -295,7 +308,7 @@ function OrderNotFound() {
                     <AlertCircle className="text-red-500" size={28} />
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">Order not found</h2>
-                <p className="text-slate-500 mt-2">We couldn't find this order. It may have been removed or the link is incorrect.</p>
+                <p className="text-slate-500 mt-2">We couldn&apos;t find this order. It may have been removed or the link is incorrect.</p>
                 <Link href="/orders" className="inline-block mt-6 bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-medium transition-colors">
                     View all orders
                 </Link>

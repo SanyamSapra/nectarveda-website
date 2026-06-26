@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { loginUser } from '@/services/auth.service';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
+import { buttonMotion, fadeUp, scaleFade } from '@/lib/animations';
+import { notify } from '@/lib/feedback';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -23,6 +26,7 @@ export default function LoginPage() {
         try {
             const data = await loginUser(formData);
             login(data);
+            notify.info('Welcome back!');
             if (data.role === 'admin') {
                 router.push('/admin');
             } else {
@@ -30,13 +34,14 @@ export default function LoginPage() {
             }
         } catch (error) {
             console.error(error);
+            notify.error(error);
         }
     }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4">
 
-            <div className="w-full max-w-md">
+            <motion.div className="w-full max-w-md" {...fadeUp}>
 
                 {/* Logo / Brand */}
                 <div className="text-center mb-8">
@@ -50,7 +55,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8">
+                <motion.div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8" {...scaleFade}>
 
                     <div className="mb-8 text-center">
                         <h2 className="text-3xl font-bold text-slate-900">
@@ -97,17 +102,18 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <button
+                        <motion.button
                             type="submit"
                             className="w-full bg-teal-700 hover:bg-teal-800 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+                            {...buttonMotion}
                         >
                             Login
-                        </button>
+                        </motion.button>
 
                     </form>
 
                     <div className="mt-6 text-center text-sm text-slate-500">
-                        Don't have an account?{" "}
+                        Don&apos;t have an account?{" "}
                         <a
                             href="/register"
                             className="text-teal-700 font-semibold hover:text-teal-800"
@@ -116,9 +122,9 @@ export default function LoginPage() {
                         </a>
                     </div>
 
-                </div>
+                </motion.div>
 
-            </div>
+            </motion.div>
 
         </div>
     )

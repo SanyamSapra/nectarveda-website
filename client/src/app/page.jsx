@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { getProducts } from '@/services/product.service';
 import Link from 'next/link';
 import { Leaf, ArrowRight, ImageOff, ShieldCheck, Truck, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
+import { buttonMotion, cardHover, fadeIn, fadeUp, staggerContainer, staggerItem } from '@/lib/animations';
 
 export default function HomePage() {
     const [products, setProducts] = useState([]);
@@ -28,12 +30,12 @@ export default function HomePage() {
         <main className="min-h-screen bg-slate-50">
             {/* Hero Section */}
             <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-emerald-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+                <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center" {...fadeUp}>
 
-                    <span className="inline-flex items-center gap-1.5 bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide mb-7">
+                    <motion.span className="inline-flex items-center gap-1.5 bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide mb-7" {...fadeIn}>
                         <Leaf size={13} strokeWidth={2.5} />
                         100% natural Ayurvedic products
-                    </span>
+                    </motion.span>
 
                     <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1] tracking-tight">
                         Pure Ayurveda for
@@ -48,13 +50,15 @@ export default function HomePage() {
                     </p>
 
                     <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center items-center">
-                        <Link
-                            href="/products"
-                            className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white px-7 py-3.5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200 w-full sm:w-auto justify-center"
-                        >
-                            Explore products
-                            <ArrowRight size={17} />
-                        </Link>
+                        <motion.div {...buttonMotion} className="w-full sm:w-auto">
+                            <Link
+                                href="/products"
+                                className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 text-white px-7 py-3.5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all duration-200 w-full sm:w-auto justify-center"
+                            >
+                                Explore products
+                                <ArrowRight size={17} />
+                            </Link>
+                        </motion.div>
                     </div>
 
                     {/* Trust strip */}
@@ -72,7 +76,7 @@ export default function HomePage() {
                             Free shipping over ₹999
                         </span>
                     </div> */}
-                </div>
+                </motion.div>
             </section>
 
             {/* Featured Products */}
@@ -124,16 +128,21 @@ export default function HomePage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                    <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8" variants={staggerContainer} initial="initial" animate="animate">
                         {products.map((product) => {
                             const hasDiscount = product.salePrice && product.salePrice < product.price;
                             const displayPrice = product.salePrice || product.price;
 
                             return (
+                                <motion.div
+                                    key={product._id}
+                                    variants={staggerItem}
+                                    whileHover={cardHover}
+                                    className="h-full"
+                                >
                                 <Link
                                     href={`/products/${product._id}`}
-                                    key={product._id}
-                                    className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                                    className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                                 >
                                     <div className="relative bg-slate-100 aspect-square overflow-hidden">
                                         {product.images?.[0] ? (
@@ -141,7 +150,7 @@ export default function HomePage() {
                                                 src={product.images[0]}
                                                 alt={product.name}
                                                 loading="lazy"
-                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
@@ -185,9 +194,10 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                 </Link>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
                 )}
 
                 <div className="mt-10 text-center sm:hidden">

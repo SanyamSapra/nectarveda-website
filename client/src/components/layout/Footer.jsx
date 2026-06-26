@@ -71,7 +71,7 @@ export default function Footer() {
                         </Link>
 
                         <p className="mt-4 text-slate-400 leading-7 max-w-sm">
-                            Premium Ayurvedic products crafted with nature's finest ingredients
+                            Premium Ayurvedic products crafted with nature&apos;s finest ingredients
                             for your wellness journey.
                         </p>
                     </div>
