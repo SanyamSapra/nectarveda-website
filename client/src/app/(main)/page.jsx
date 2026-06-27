@@ -29,7 +29,7 @@ export default function HomePage() {
     return (
         <main className="min-h-screen bg-slate-50">
             {/* Hero Section */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-emerald-50">
+            <section className="relative overflow-hidden bg-linear-to-br from-teal-50 via-white to-emerald-50">
                 <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center" {...fadeUp}>
 
                     <motion.span className="inline-flex items-center gap-1.5 bg-teal-100 text-teal-800 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide mb-7" {...fadeIn}>
@@ -171,7 +171,7 @@ export default function HomePage() {
                                             {product.name}
                                         </h3>
 
-                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-[2.5rem]">
+                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
                                             {product.description}
                                         </p>
 

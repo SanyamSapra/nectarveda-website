@@ -10,6 +10,8 @@ import orderRoutes from './routes/order.routes.js'
 import userRoutes from './routes/user.routes.js'
 import addressRoutes from './routes/address.routes.js';
 import './config/cloudinary.js'
+import adminDashboardRoutes from './routes/admin.dashboard.routes.js';
+import adminUserRoutes from './routes/admin.user.routes.js';
 
 const app = express();
 
@@ -49,6 +51,9 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/addresses', addressRoutes);
+
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/users', adminUserRoutes); 
 
 app.get("/", (req, res) => {
   res.status(200).json({

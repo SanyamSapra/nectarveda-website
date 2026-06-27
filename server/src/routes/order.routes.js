@@ -6,9 +6,9 @@ import admin from '../middleware/admin.middleware.js'
 const router = express.Router();
 
 router.post('/', protect, createOrder)
+router.get('/', protect, admin, getAllOrders)   // pehle
 router.get('/my', protect, getMyOrders)
-router.get('/:id', protect, getOrderById)
-router.get('/', protect, admin, getAllOrders)
+router.get('/:id', protect, getOrderById)      // baad mein
 router.put('/:id/status', protect, admin, updateOrderStatus)
 router.put('/:id/cancel', protect, cancelOrder)
 
