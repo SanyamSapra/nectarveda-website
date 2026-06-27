@@ -3,16 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ShoppingCart, User, LogOut, Search, Home, Store, Info, LogIn } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { ShoppingCart, User, LogOut, Search, Home, Store, Info, LogIn, X } from 'lucide-react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { logoutUser } from '@/services/auth.service';
 import { buttonMotion, scaleFade } from '@/lib/animations';
 import { notify } from '@/lib/feedback';
-
-
 const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'Shop' },
@@ -35,6 +33,9 @@ export default function Navbar() {
 
     const { cartCount } = useCart();
 
+    const router = useRouter()
+    const [searchQuery, setSearchQuery] = useState('')
+
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
@@ -44,6 +45,12 @@ export default function Navbar() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSearchQuery(pathname === '/products' ? params.get('search') || '' : '')
+    }, [pathname])
 
     const isActive = (href) => pathname === href;
 
@@ -58,6 +65,49 @@ export default function Navbar() {
             setProfileMenuOpen(false);
         }
     };
+
+    const submitSearch = (e) => {
+        e.preventDefault()
+        const query = searchQuery.trim()
+        router.push(query ? `/products?search=${encodeURIComponent(query)}` : '/products')
+    }
+
+    const updateSearch = (value) => {
+        setSearchQuery(value)
+
+        if (pathname === '/products') {
+            const query = value.trim()
+            router.replace(query ? `/products?search=${encodeURIComponent(query)}` : '/products', { scroll: false })
+        }
+    }
+
+    const clearSearch = () => {
+        setSearchQuery('')
+        if (pathname === '/products') router.push('/products')
+    }
+
+    const searchInput = (className) => (
+        <form onSubmit={submitSearch} className={`relative group ${className}`}>
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-600 transition-colors" />
+            <input
+                type="text"
+                placeholder="Search wellness..."
+                value={searchQuery}
+                onChange={e => updateSearch(e.target.value)}
+                className="w-full rounded-full border border-stone-200 bg-stone-50 pl-10 pr-10 py-2 text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all lg:py-2.5"
+            />
+            {searchQuery && (
+                <button
+                    type="button"
+                    onClick={clearSearch}
+                    aria-label="Clear search"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+                >
+                    <X size={14} />
+                </button>
+            )}
+        </form>
+    )
 
     return (
         <>
@@ -90,14 +140,7 @@ export default function Navbar() {
                         </Link>
 
                         {/* Inline search — mobile only; tablet/desktop use the search next to account icons */}
-                        <label className="relative flex-1 min-w-0 md:hidden group">
-                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-600 transition-colors" />
-                            <input
-                                type="search"
-                                placeholder="Search wellness..."
-                                className="w-full rounded-full border border-stone-200 bg-stone-50 pl-10 pr-3 py-2 text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                            />
-                        </label>
+                        {searchInput('flex-1 min-w-0 md:hidden')}
 
                         {/* Center Nav (desktop) */}
                         <nav className="hidden md:flex items-center gap-1 bg-stone-50 border border-stone-200/80 rounded-full p-1.5 shadow-sm">
@@ -123,14 +166,7 @@ export default function Navbar() {
                         <div className="hidden md:flex items-center gap-2">
 
                             {/* Search */}
-                            <label className="relative hidden lg:block mr-2 group">
-                                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 group-focus-within:text-teal-600 transition-colors" />
-                                <input
-                                    type="search"
-                                    placeholder="Search wellness..."
-                                    className="w-64 rounded-full border border-stone-200 bg-stone-50 pl-10 pr-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-                                />
-                            </label>
+                            {searchInput('hidden lg:block mr-2 w-64')}
 
                             {user ? (
                                 <>
@@ -165,46 +201,46 @@ export default function Navbar() {
                                         </button>
 
                                         <AnimatePresence>
-                                        {profileMenuOpen && (
-                                            <motion.div
-                                                className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg py-2 z-50"
-                                                {...scaleFade}
-                                            >
-                                                <Link
-                                                    href="/profile"
-                                                    onClick={() => setProfileMenuOpen(false)}
-                                                    className="block px-4 py-2 hover:bg-stone-100"
+                                            {profileMenuOpen && (
+                                                <motion.div
+                                                    className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg py-2 z-50"
+                                                    {...scaleFade}
                                                 >
-                                                    My Profile
-                                                </Link>
+                                                    <Link
+                                                        href="/profile"
+                                                        onClick={() => setProfileMenuOpen(false)}
+                                                        className="block px-4 py-2 hover:bg-stone-100"
+                                                    >
+                                                        My Profile
+                                                    </Link>
 
-                                                <Link
-                                                    href="/orders"
-                                                    onClick={() => setProfileMenuOpen(false)}
-                                                    className="block px-4 py-2 hover:bg-stone-100"
-                                                >
-                                                    My Orders
-                                                </Link>
+                                                    <Link
+                                                        href="/orders"
+                                                        onClick={() => setProfileMenuOpen(false)}
+                                                        className="block px-4 py-2 hover:bg-stone-100"
+                                                    >
+                                                        My Orders
+                                                    </Link>
 
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
-                                                >
-                                                    <div className="flex items-center gap-2">Logout <LogOut size={18} strokeWidth={2.2} /></div>
-                                                </button>
-                                            </motion.div>
-                                        )}
+                                                    <button
+                                                        onClick={handleLogout}
+                                                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                                                    >
+                                                        <div className="flex items-center gap-2">Logout <LogOut size={18} strokeWidth={2.2} /></div>
+                                                    </button>
+                                                </motion.div>
+                                            )}
                                         </AnimatePresence>
                                     </div>
                                 </>
                             ) : (
                                 <motion.div {...buttonMotion}>
-                                <Link
-                                    href="/login"
-                                    className="ml-2 px-6 py-2.5 rounded-full bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 shadow-md hover:shadow-lg transition-all duration-300"
-                                >
-                                    Sign in
-                                </Link>
+                                    <Link
+                                        href="/login"
+                                        className="ml-2 px-6 py-2.5 rounded-full bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 shadow-md hover:shadow-lg transition-all duration-300"
+                                    >
+                                        Sign in
+                                    </Link>
                                 </motion.div>
                             )}
                         </div>

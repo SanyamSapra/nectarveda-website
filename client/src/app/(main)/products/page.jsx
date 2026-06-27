@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { getProducts } from '@/services/product.service';
 import { getCategories } from '@/services/category.service';
 import Link from 'next/link';
@@ -8,13 +8,17 @@ import { Leaf, ImageOff, AlertCircle, SearchX } from 'lucide-react';
 import { motion } from 'motion/react';
 import { buttonMotion, cardHover, fadeUp, staggerContainer, staggerItem } from '@/lib/animations';
 import { notify } from '@/lib/feedback';
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function ProductsPage() {
+function ProductsPageContent() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const searchFromURL = searchParams.get('search') || ''
 
     useEffect(() => {
         const fetchData = async () => {
@@ -38,9 +42,28 @@ export default function ProductsPage() {
         fetchData();
     }, []);
 
-    const filteredProducts = selectedCategory === 'all'
-        ? products
-        : products.filter(p => p.category?._id === selectedCategory);
+    const searchTerm = searchFromURL.trim().toLowerCase()
+    const filteredProducts = products.filter(product => {
+        const matchesCategory = selectedCategory === 'all' || product.category?._id === selectedCategory
+        if (!matchesCategory) return false
+
+        if (!searchTerm) return true
+
+        const searchableText = [
+            product.name,
+            product.description,
+            product.category?.name,
+            product.sku,
+            ...(product.ingredients || []),
+            ...(product.benefits || []),
+            ...(product.conditions || []),
+        ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+
+        return searchableText.includes(searchTerm)
+    });
 
     if (loading) {
         return (
@@ -153,14 +176,19 @@ export default function ProductsPage() {
                             <SearchX className="text-slate-400" size={28} />
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900">
-                            No products here yet
+                            {searchFromURL ? `No products matching "${searchFromURL}"` : 'No products here yet'}
                         </h3>
                         <p className="text-slate-500 mt-2 max-w-sm mx-auto">
-                            Try a different category or check back soon.
+                            {searchFromURL
+                                ? 'Try a different product name, category, ingredient, or benefit.'
+                                : 'Try a different category or check back soon.'}
                         </p>
-                        {selectedCategory !== 'all' && (
+                        {(selectedCategory !== 'all' || searchFromURL) && (
                             <motion.button
-                                onClick={() => setSelectedCategory('all')}
+                                onClick={() => {
+                                    setSelectedCategory('all')
+                                    if (searchFromURL) router.push('/products')
+                                }}
                                 className="inline-block mt-5 text-teal-700 font-medium hover:text-teal-800 transition-colors"
                                 {...buttonMotion}
                             >
@@ -182,70 +210,70 @@ export default function ProductsPage() {
                                     whileHover={cardHover}
                                     className="h-full"
                                 >
-                                <Link
-                                    href={`/products/${product._id}`}
-                                    className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-                                >
-                                    {/* Product Image */}
-                                    <div className="relative bg-slate-100 aspect-square overflow-hidden">
-                                        {product.images?.[0] ? (
-                                            <img
-                                                src={product.images[0]}
-                                                alt={product.name}
-                                                loading="lazy"
-                                                className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
-                                                <ImageOff size={28} />
-                                                <span className="text-xs text-slate-400">No image</span>
-                                            </div>
-                                        )}
+                                    <Link
+                                        href={`/products/${product._id}`}
+                                        className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    >
+                                        {/* Product Image */}
+                                        <div className="relative bg-slate-100 aspect-square overflow-hidden">
+                                            {product.images?.[0] ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    loading="lazy"
+                                                    className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
+                                                    <ImageOff size={28} />
+                                                    <span className="text-xs text-slate-400">No image</span>
+                                                </div>
+                                            )}
 
-                                        {hasDiscount && (
-                                            <span className="absolute top-3 left-3 bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-                                                Sale
-                                            </span>
-                                        )}
-
-                                        {product.stock === 0 && (
-                                            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                                                <span className="bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                                                    Out of stock
+                                            {hasDiscount && (
+                                                <span className="absolute top-3 left-3 bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                                                    Sale
                                                 </span>
-                                            </div>
-                                        )}
-                                    </div>
+                                            )}
 
-                                    {/* Product Content */}
-                                    <div className="p-4 sm:p-5">
-                                        <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1">
-                                            {product.name}
-                                        </h3>
-
-                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
-                                            {product.description}
-                                        </p>
-
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-xl font-bold text-slate-900 tabular-nums">
-                                                    ₹{displayPrice.toLocaleString('en-IN')}
-                                                </span>
-                                                {hasDiscount && (
-                                                    <span className="text-sm text-slate-400 line-through tabular-nums">
-                                                        ₹{product.price.toLocaleString('en-IN')}
+                                            {product.stock === 0 && (
+                                                <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+                                                    <span className="bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                                                        Out of stock
                                                     </span>
-                                                )}
-                                            </div>
-
-                                            <span className="text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
-                                                View
-                                                <span className="group-hover:translate-x-0.5 transition-transform">→</span>
-                                            </span>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                </Link>
+
+                                        {/* Product Content */}
+                                        <div className="p-4 sm:p-5">
+                                            <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1">
+                                                {product.name}
+                                            </h3>
+
+                                            <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
+                                                {product.description}
+                                            </p>
+
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-xl font-bold text-slate-900 tabular-nums">
+                                                        ₹{displayPrice.toLocaleString('en-IN')}
+                                                    </span>
+                                                    {hasDiscount && (
+                                                        <span className="text-sm text-slate-400 line-through tabular-nums">
+                                                            ₹{product.price.toLocaleString('en-IN')}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <span className="text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                                                    View
+                                                    <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
                                 </motion.div>
                             );
                         })}
@@ -254,4 +282,18 @@ export default function ProductsPage() {
             </motion.div>
         </main>
     );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={
+            <main className="min-h-screen bg-slate-50 pt-10 pb-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                    <div className="h-9 w-56 bg-slate-200 rounded-lg animate-pulse" />
+                </div>
+            </main>
+        }>
+            <ProductsPageContent />
+        </Suspense>
+    )
 }

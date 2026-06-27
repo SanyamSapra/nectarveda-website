@@ -10,8 +10,25 @@ const createSlug = (name) => name
     .replace(/\s+/g, '-');
 
 // Get all products
+// Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
-    const products = await Product.find().populate('category');
+    const { search, category } = req.query;
+
+    const query = {};
+
+    if (search) {
+        query.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } }
+        ]
+    }
+
+    if (category) {
+        query.category = category;
+    }
+
+    const products = await Product.find(query).populate('category');
+
     res.status(200).json({
         success: true,
         count: products.length,
@@ -36,7 +53,7 @@ const getProductById = asyncHandler(async (req, res) => {
 
 // Create product
 const createProduct = asyncHandler(async (req, res) => {
-    const { name, description, ingredients, benefits, price, salePrice, stock, sku, category, conditions, isFeatured 
+    const { name, description, ingredients, benefits, price, salePrice, stock, sku, category, conditions, isFeatured
     } = req.body;
     const images = req.files ? req.files.map(file => file.path) : []
 
@@ -110,8 +127,8 @@ const updateProduct = asyncHandler(async (req, res) => {
     }
 
     const product = await Product.findByIdAndUpdate(
-        req.params.id, 
-        req.body, 
+        req.params.id,
+        req.body,
         { new: true, runValidators: true }
     );
 

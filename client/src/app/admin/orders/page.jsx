@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
-import { RefreshCw, PackageSearch, ChevronDown, Check } from 'lucide-react'
+import { RefreshCw, PackageSearch, ChevronDown, Check, Search } from 'lucide-react'
 
 const STATUS_OPTIONS = ['processing', 'shipped', 'delivered', 'cancelled']
 const FILTERS = ['all', ...STATUS_OPTIONS]
@@ -67,6 +67,7 @@ export default function AdminOrdersPage() {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
+    const [search, setSearch] = useState('')
     const [updating, setUpdating] = useState(null)
 
     const fetchOrders = async () => {
@@ -98,7 +99,22 @@ export default function AdminOrdersPage() {
     }
 
     const countFor = (f) => f === 'all' ? orders.length : orders.filter(o => o.orderStatus === f).length
-    const filtered = filter === 'all' ? orders : orders.filter(o => o.orderStatus === filter)
+    const searchTerm = search.trim().toLowerCase()
+    const statusFiltered = filter === 'all' ? orders : orders.filter(o => o.orderStatus === filter)
+    const filtered = searchTerm
+        ? statusFiltered.filter(order => {
+            const orderId = order._id?.toLowerCase() || ''
+            const shortId = order._id?.slice(-6).toLowerCase() || ''
+            const customerName = order.user?.name?.toLowerCase() || ''
+            const customerEmail = order.user?.email?.toLowerCase() || ''
+            const status = order.orderStatus?.toLowerCase() || ''
+            const amount = String(order.totalAmount || '')
+            const items = order.items?.map(item => item.product?.name || '').join(' ').toLowerCase() || ''
+
+            return [orderId, shortId, customerName, customerEmail, status, amount, items]
+                .some(value => value.includes(searchTerm))
+        })
+        : statusFiltered
 
     if (loading) {
         return (
@@ -115,18 +131,30 @@ export default function AdminOrdersPage() {
         <div className="space-y-5">
 
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div>
                     <h1 className="text-lg font-semibold text-slate-900">Orders</h1>
                     <p className="text-sm text-slate-500 mt-0.5">{orders.length} total order{orders.length !== 1 ? 's' : ''}</p>
                 </div>
-                <button
-                    onClick={fetchOrders}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:text-teal-700 hover:border-teal-300 transition-colors"
-                >
-                    <RefreshCw size={14} />
-                    <span className="hidden sm:inline">Refresh</span>
-                </button>
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search orders..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition w-52"
+                        />
+                    </div>
+                    <button
+                        onClick={fetchOrders}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:text-teal-700 hover:border-teal-300 transition-colors"
+                    >
+                        <RefreshCw size={14} />
+                        <span className="hidden sm:inline">Refresh</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filter Tabs */}
@@ -162,13 +190,24 @@ export default function AdminOrdersPage() {
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
                         <PackageSearch size={22} className="text-slate-400" />
                     </div>
-                    <p className="text-sm font-medium text-slate-700">No {filter === 'all' ? '' : filter} orders</p>
+                    <p className="text-sm font-medium text-slate-700">
+                        {search ? `No orders matching "${search}"` : `No ${filter === 'all' ? '' : filter} orders`}
+                    </p>
                     <p className="text-xs text-slate-400 max-w-xs">
-                        {filter === 'all'
+                        {search
+                            ? 'Try another customer, order ID, product, amount, or status.'
+                            : filter === 'all'
                             ? 'Orders will appear here once customers start placing them.'
                             : `No orders are currently marked as ${filter}. Try a different filter.`}
                     </p>
-                    {filter !== 'all' && (
+                    {search ? (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="mt-1 text-xs text-teal-700 font-medium hover:underline"
+                        >
+                            Clear search
+                        </button>
+                    ) : filter !== 'all' && (
                         <button
                             onClick={() => setFilter('all')}
                             className="mt-1 text-xs text-teal-700 font-medium hover:underline"

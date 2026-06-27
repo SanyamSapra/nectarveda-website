@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
-import { Users, Mail, Phone, MapPin, ShoppingBag, IndianRupee, X, Loader2 } from 'lucide-react'
+import { Users, Mail, Phone, MapPin, ShoppingBag, IndianRupee, X, Loader2, Search } from 'lucide-react'
 
 function UserDetailModal({ userId, onClose }) {
     const [data, setData] = useState(null)
@@ -138,6 +138,7 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedUserId, setSelectedUserId] = useState(null)
+    const [search, setSearch] = useState('')
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -153,6 +154,23 @@ export default function AdminUsersPage() {
         fetchUsers()
     }, [])
 
+    const searchTerm = search.trim().toLowerCase()
+    const filteredUsers = searchTerm
+        ? users.filter(user => {
+            const addressText = user.addresses?.map(addr =>
+                [addr.street, addr.city, addr.state, addr.pincode].filter(Boolean).join(' ')
+            ).join(' ').toLowerCase() || ''
+
+            return [
+                user.name?.toLowerCase() || '',
+                user.email?.toLowerCase() || '',
+                user.phone?.toLowerCase() || '',
+                user._id?.toLowerCase() || '',
+                addressText
+            ].some(value => value.includes(searchTerm))
+        })
+        : users
+
     if (loading) {
         return (
             <div className="space-y-3 animate-pulse">
@@ -166,18 +184,40 @@ export default function AdminUsersPage() {
         <>
             <div className="space-y-5">
                 {/* Header */}
-                <div>
-                    <h1 className="text-lg font-semibold text-slate-900">Users</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                        <h1 className="text-lg font-semibold text-slate-900">Users</h1>
+                        <p className="text-sm text-slate-500 mt-0.5">{users.length} registered user{users.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <div className="relative">
+                        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition w-52"
+                        />
+                    </div>
                 </div>
 
                 {/* Table */}
-                {users.length === 0 ? (
+                {filteredUsers.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-slate-200 py-20 flex flex-col items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
                             <Users size={22} className="text-slate-400" />
                         </div>
-                        <p className="text-sm font-medium text-slate-700">No users yet</p>
+                        <p className="text-sm font-medium text-slate-700">
+                            {search ? `No users matching "${search}"` : 'No users yet'}
+                        </p>
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="text-xs text-teal-700 font-medium hover:underline"
+                            >
+                                Clear search
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -193,7 +233,7 @@ export default function AdminUsersPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
-                                    {users.map(user => (
+                                    {filteredUsers.map(user => (
                                         <tr key={user._id} className="hover:bg-slate-50/60 transition-colors">
                                             <td className="px-5 py-3.5">
                                                 <div className="flex items-center gap-3">

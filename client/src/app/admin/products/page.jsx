@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
-import {
-    Plus, Pencil, Trash2, X, Check, Loader2,
-    ImageOff, PackageSearch, Tag, Upload
-} from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, Loader2, ImageOff, PackageSearch, Tag, Upload, Search } from 'lucide-react'
 
 // ─── Tag Input ───────────────────────────────────────────────
 function TagInput({ label, values, onChange, placeholder }) {
@@ -40,11 +37,7 @@ function TagInput({ label, values, onChange, placeholder }) {
                     placeholder={placeholder}
                     className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
                 />
-                <button
-                    onClick={add}
-                    type="button"
-                    className="px-3 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-teal-50 hover:text-teal-700 text-sm font-medium transition-colors"
-                >
+                <button onClick={add} type="button" className="px-3 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-teal-50 hover:text-teal-700 text-sm font-medium transition-colors">
                     Add
                 </button>
             </div>
@@ -62,6 +55,7 @@ function ProductModal({ product, categories, onClose, onSave }) {
         stock: product?.stock ?? '',
         sku: product?.sku || '',
         category: product?.category?._id || product?.category || '',
+        isFeatured: product?.isFeatured || false,
         ingredients: product?.ingredients || [],
         benefits: product?.benefits || [],
         conditions: product?.conditions || [],
@@ -83,7 +77,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
         if (!form.name.trim()) return toast.error('Name is required')
         if (!form.description.trim()) return toast.error('Description is required')
         if (!form.price) return toast.error('Price is required')
-        if (!form.stock === '') return toast.error('Stock is required')
         if (!form.category) return toast.error('Category is required')
 
         setSaving(true)
@@ -120,7 +113,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-                {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
                     <h2 className="text-base font-semibold text-slate-900">
                         {product ? 'Edit Product' : 'New Product'}
@@ -130,10 +122,7 @@ function ProductModal({ product, categories, onClose, onSave }) {
                     </button>
                 </div>
 
-                {/* Body */}
                 <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
-
-                    {/* Name */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Name *</label>
                         <input type="text" value={form.name} onChange={e => set('name', e.target.value)}
@@ -141,7 +130,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition" />
                     </div>
 
-                    {/* Description */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Description *</label>
                         <textarea value={form.description} onChange={e => set('description', e.target.value)}
@@ -149,7 +137,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition resize-none" />
                     </div>
 
-                    {/* Price, Sale Price, Stock */}
                     <div className="grid grid-cols-3 gap-3">
                         {[
                             { label: 'Price (₹) *', key: 'price', placeholder: '299' },
@@ -165,7 +152,6 @@ function ProductModal({ product, categories, onClose, onSave }) {
                         ))}
                     </div>
 
-                    {/* SKU + Category */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">SKU</label>
@@ -185,18 +171,14 @@ function ProductModal({ product, categories, onClose, onSave }) {
                         </div>
                     </div>
 
-                    {/* Tag Inputs */}
                     <TagInput label="Ingredients" values={form.ingredients} onChange={v => set('ingredients', v)} placeholder="e.g. Bhringraj oil — press Enter" />
                     <TagInput label="Benefits" values={form.benefits} onChange={v => set('benefits', v)} placeholder="e.g. Reduces hair fall — press Enter" />
                     <TagInput label="Conditions" values={form.conditions} onChange={v => set('conditions', v)} placeholder="e.g. Dandruff — press Enter" />
 
-                    {/* Images */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Images</label>
-                        <div
-                            onClick={() => fileRef.current.click()}
-                            className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-colors"
-                        >
+                        <div onClick={() => fileRef.current.click()}
+                            className="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-colors">
                             <Upload size={20} className="mx-auto text-slate-400 mb-2" />
                             <p className="text-sm text-slate-500">Click to upload images</p>
                             <p className="text-xs text-slate-400 mt-0.5">Max 5 images</p>
@@ -212,22 +194,23 @@ function ProductModal({ product, categories, onClose, onSave }) {
                             </div>
                         )}
                     </div>
+
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <div onClick={() => set('isFeatured', !form.isFeatured)}
+                            className={`w-10 h-5 rounded-full transition-colors relative ${form.isFeatured ? 'bg-teal-600' : 'bg-slate-200'}`}>
+                            <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.isFeatured ? 'translate-x-5' : ''}`} />
+                        </div>
+                        <span className="text-sm font-medium text-slate-700">Featured product</span>
+                    </label>
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
                     <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
                         Cancel
                     </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-60 transition-colors"
-                    >
-                        {saving
-                            ? <><Loader2 size={14} className="animate-spin" /> Saving...</>
-                            : <><Check size={14} /> {product ? 'Update' : 'Create'}</>
-                        }
+                    <button onClick={handleSubmit} disabled={saving}
+                        className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white hover:bg-teal-800 disabled:opacity-60 transition-colors">
+                        {saving ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : <><Check size={14} /> {product ? 'Update' : 'Create'}</>}
                     </button>
                 </div>
             </div>
@@ -253,11 +236,8 @@ function DeleteConfirmModal({ product, onClose, onConfirm, deleting }) {
                     <button onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors">
                         Cancel
                     </button>
-                    <button
-                        onClick={onConfirm}
-                        disabled={deleting}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors"
-                    >
+                    <button onClick={onConfirm} disabled={deleting}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors">
                         {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                         Delete
                     </button>
@@ -274,6 +254,7 @@ export default function AdminProductsPage() {
     const [loading, setLoading] = useState(true)
     const [modal, setModal] = useState(null)
     const [deleting, setDeleting] = useState(false)
+    const [search, setSearch] = useState('')
 
     const fetchData = async () => {
         try {
@@ -291,6 +272,7 @@ export default function AdminProductsPage() {
         }
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { fetchData() }, [])
 
     const handleDelete = async () => {
@@ -307,10 +289,15 @@ export default function AdminProductsPage() {
         }
     }
 
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.category?.name.toLowerCase().includes(search.toLowerCase())
+    )
+
     if (loading) {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
-                {[1,2,3,4].map(i => <div key={i} className="h-72 bg-slate-200 rounded-2xl" />)}
+                {[1, 2, 3, 4].map(i => <div key={i} className="h-72 bg-slate-200 rounded-2xl" />)}
             </div>
         )
     }
@@ -319,36 +306,51 @@ export default function AdminProductsPage() {
         <>
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
                         <h1 className="text-lg font-semibold text-slate-900">Products</h1>
                         <p className="text-sm text-slate-500 mt-0.5">{products.length} total product{products.length !== 1 ? 's' : ''}</p>
                     </div>
-                    <button
-                        onClick={() => setModal({ type: 'create' })}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors shadow-sm"
-                    >
-                        <Plus size={16} />
-                        New Product
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search products..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition w-52"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setModal({ type: 'create' })}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors shadow-sm"
+                        >
+                            <Plus size={16} />
+                            New Product
+                        </button>
+                    </div>
                 </div>
 
                 {/* Grid */}
-                {products.length === 0 ? (
+                {filteredProducts.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-slate-200 py-20 flex flex-col items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
                             <PackageSearch size={22} className="text-slate-400" />
                         </div>
-                        <p className="text-sm font-medium text-slate-700">No products yet</p>
-                        <button onClick={() => setModal({ type: 'create' })} className="text-xs text-teal-700 font-medium hover:underline">
-                            Add your first product
-                        </button>
+                        <p className="text-sm font-medium text-slate-700">
+                            {search ? `No products matching "${search}"` : 'No products yet'}
+                        </p>
+                        {!search && (
+                            <button onClick={() => setModal({ type: 'create' })} className="text-xs text-teal-700 font-medium hover:underline">
+                                Add your first product
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {products.map(product => (
+                        {filteredProducts.map(product => (
                             <div key={product._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col">
-                                {/* Image */}
                                 <div className="aspect-square bg-slate-100 relative overflow-hidden">
                                     {product.images?.[0] ? (
                                         <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
@@ -357,14 +359,14 @@ export default function AdminProductsPage() {
                                             <ImageOff size={28} className="text-slate-300" />
                                         </div>
                                     )}
+                                    {product.isFeatured && (
+                                        <span className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Featured</span>
+                                    )}
                                     {product.salePrice && (
-                                        <span className="absolute top-2 right-2 bg-teal-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                            Sale
-                                        </span>
+                                        <span className="absolute top-2 right-2 bg-teal-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Sale</span>
                                     )}
                                 </div>
 
-                                {/* Info */}
                                 <div className="p-4 flex flex-col flex-1 gap-2">
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-slate-900 text-sm line-clamp-1">{product.name}</h3>
@@ -386,18 +388,13 @@ export default function AdminProductsPage() {
                                         </span>
                                     </div>
 
-                                    {/* Actions */}
                                     <div className="flex gap-2 pt-2 border-t border-slate-100">
-                                        <button
-                                            onClick={() => setModal({ type: 'edit', product })}
-                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 transition-colors"
-                                        >
+                                        <button onClick={() => setModal({ type: 'edit', product })}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 transition-colors">
                                             <Pencil size={13} /> Edit
                                         </button>
-                                        <button
-                                            onClick={() => setModal({ type: 'delete', product })}
-                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
-                                        >
+                                        <button onClick={() => setModal({ type: 'delete', product })}
+                                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors">
                                             <Trash2 size={13} /> Delete
                                         </button>
                                     </div>

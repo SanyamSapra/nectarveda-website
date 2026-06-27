@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
 import { toast } from 'sonner'
-import { Plus, Pencil, Trash2, Tag, X, Check, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Tag, X, Check, Loader2, Search } from 'lucide-react'
 
 function CategoryModal({ category, onClose, onSave }) {
     const [name, setName] = useState(category?.name || '')
@@ -123,6 +123,7 @@ export default function AdminCategoriesPage() {
     const [loading, setLoading] = useState(true)
     const [modal, setModal] = useState(null) // null | { type: 'create' | 'edit' | 'delete', category? }
     const [deleting, setDeleting] = useState(false)
+    const [search, setSearch] = useState('')
 
     const fetchCategories = async () => {
         try {
@@ -136,6 +137,7 @@ export default function AdminCategoriesPage() {
         }
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => { fetchCategories() }, [])
 
     const handleDelete = async () => {
@@ -152,6 +154,15 @@ export default function AdminCategoriesPage() {
         }
     }
 
+    const searchTerm = search.trim().toLowerCase()
+    const filteredCategories = searchTerm
+        ? categories.filter(cat =>
+            cat.name?.toLowerCase().includes(searchTerm) ||
+            cat.description?.toLowerCase().includes(searchTerm) ||
+            cat._id?.toLowerCase().includes(searchTerm)
+        )
+        : categories
+
     if (loading) {
         return (
             <div className="space-y-3 animate-pulse">
@@ -167,37 +178,60 @@ export default function AdminCategoriesPage() {
         <>
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
                         <h1 className="text-lg font-semibold text-slate-900">Categories</h1>
                         <p className="text-sm text-slate-500 mt-0.5">{categories.length} total</p>
                     </div>
-                    <button
-                        onClick={() => setModal({ type: 'create' })}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors shadow-sm"
-                    >
-                        <Plus size={16} />
-                        New Category
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Search categories..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition w-52"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setModal({ type: 'create' })}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 transition-colors shadow-sm"
+                        >
+                            <Plus size={16} />
+                            New Category
+                        </button>
+                    </div>
                 </div>
 
                 {/* Grid */}
-                {categories.length === 0 ? (
+                {filteredCategories.length === 0 ? (
                     <div className="bg-white rounded-2xl border border-slate-200 py-20 flex flex-col items-center gap-3">
                         <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
                             <Tag size={22} className="text-slate-400" />
                         </div>
-                        <p className="text-sm font-medium text-slate-700">No categories yet</p>
-                        <button
-                            onClick={() => setModal({ type: 'create' })}
-                            className="text-xs text-teal-700 font-medium hover:underline"
-                        >
-                            Create your first category
-                        </button>
+                        <p className="text-sm font-medium text-slate-700">
+                            {search ? `No categories matching "${search}"` : 'No categories yet'}
+                        </p>
+                        {search ? (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="text-xs text-teal-700 font-medium hover:underline"
+                            >
+                                Clear search
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setModal({ type: 'create' })}
+                                className="text-xs text-teal-700 font-medium hover:underline"
+                            >
+                                Create your first category
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {categories.map(cat => (
+                        {filteredCategories.map(cat => (
                             <div key={cat._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col gap-3 hover:shadow-md hover:border-slate-300 transition-all duration-200">
                                 <div className="flex items-start justify-between gap-2">
                                     <div className="flex items-center gap-2.5">
