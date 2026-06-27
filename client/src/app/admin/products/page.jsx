@@ -246,7 +246,7 @@ function DeleteConfirmModal({ product, onClose, onConfirm, deleting }) {
                 <div className="text-center">
                     <h2 className="text-base font-semibold text-slate-900">Delete product?</h2>
                     <p className="text-sm text-slate-500 mt-1">
-                        <span className="font-medium text-slate-700">"{product.name}"</span> will be permanently deleted.
+                        <span className="font-medium text-slate-700">&quot;{product.name}&quot;</span> will be permanently deleted.
                     </p>
                 </div>
                 <div className="flex gap-3">
@@ -275,8 +275,6 @@ export default function AdminProductsPage() {
     const [modal, setModal] = useState(null)
     const [deleting, setDeleting] = useState(false)
 
-    useEffect(() => { fetchData() }, [])
-
     const fetchData = async () => {
         try {
             setLoading(true)
@@ -292,6 +290,8 @@ export default function AdminProductsPage() {
             setLoading(false)
         }
     }
+
+    useEffect(() => { fetchData() }, [])
 
     const handleDelete = async () => {
         setDeleting(true)

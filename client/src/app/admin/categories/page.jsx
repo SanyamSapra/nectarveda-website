@@ -97,7 +97,7 @@ function DeleteConfirmModal({ category, onClose, onConfirm, deleting }) {
                 <div className="text-center">
                     <h2 className="text-base font-semibold text-slate-900">Delete category?</h2>
                     <p className="text-sm text-slate-500 mt-1">
-                        <span className="font-medium text-slate-700">"{category.name}"</span> will be permanently deleted. This cannot be undone.
+                        <span className="font-medium text-slate-700">&quot;{category.name}&quot;</span> will be permanently deleted. This cannot be undone.
                     </p>
                 </div>
                 <div className="flex gap-3">
@@ -124,8 +124,6 @@ export default function AdminCategoriesPage() {
     const [modal, setModal] = useState(null) // null | { type: 'create' | 'edit' | 'delete', category? }
     const [deleting, setDeleting] = useState(false)
 
-    useEffect(() => { fetchCategories() }, [])
-
     const fetchCategories = async () => {
         try {
             setLoading(true)
@@ -137,6 +135,8 @@ export default function AdminCategoriesPage() {
             setLoading(false)
         }
     }
+
+    useEffect(() => { fetchCategories() }, [])
 
     const handleDelete = async () => {
         setDeleting(true)

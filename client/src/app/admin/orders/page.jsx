@@ -69,8 +69,6 @@ export default function AdminOrdersPage() {
     const [filter, setFilter] = useState('all')
     const [updating, setUpdating] = useState(null)
 
-    useEffect(() => { fetchOrders() }, [])
-
     const fetchOrders = async () => {
         try {
             setLoading(true)
@@ -82,6 +80,9 @@ export default function AdminOrdersPage() {
             setLoading(false)
         }
     }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { fetchOrders() }, [])
 
     const handleStatusUpdate = async (orderId, newStatus) => {
         setUpdating(orderId)
