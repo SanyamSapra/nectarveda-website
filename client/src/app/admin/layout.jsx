@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingBag, Tag, Users, LogOut, ShieldCheck, Menu, X, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
-import { toast } from 'sonner';
+import { notify } from '@/lib/feedback';
 import Image from 'next/image';
 
 const navItems = [
@@ -38,11 +38,13 @@ function Sidebar({ onClose }) {
     const handleLogout = async () => {
         try {
             await api.post('/api/auth/logout');
+            notify.logoutSuccess();
+        } catch (error) {
+            notify.error(error);
+        } finally {
             logout();
-            router.push('/login');
-            toast.success('Logged out successfully');
-        } catch {
-            toast.error('Logout failed');
+            onClose();
+            router.push('/');
         }
     };
 

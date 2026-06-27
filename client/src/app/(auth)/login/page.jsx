@@ -26,7 +26,7 @@ export default function LoginPage() {
         try {
             const data = await loginUser(formData);
             login(data);
-            notify.info('Welcome back!');
+            notify.loginSuccess();
             if (data.role === 'admin') {
                 router.push('/admin');
             } else {

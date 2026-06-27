@@ -9,7 +9,7 @@ import Link from 'next/link'
 const STATUS_COLORS = {
     delivered:  'bg-emerald-50 text-emerald-700 border-emerald-200',
     processing: 'bg-blue-50   text-blue-700   border-blue-200',
-    shipped:    'bg-violet-50 text-violet-700 border-violet-200',
+    shipped:    'bg-amber-50  text-amber-700  border-amber-400',
     pending:    'bg-amber-50  text-amber-700  border-amber-200',
     confirmed:  'bg-blue-50   text-blue-700   border-blue-200',
     cancelled:  'bg-red-50    text-red-600    border-red-200',
@@ -18,7 +18,7 @@ const STATUS_COLORS = {
 const STATUS_DOT = {
     delivered:  'bg-emerald-400',
     processing: 'bg-blue-400',
-    shipped:    'bg-violet-500',
+    shipped:    'bg-amber-400',
     pending:    'bg-amber-400',
     confirmed:  'bg-blue-400',
     cancelled:  'bg-red-400',

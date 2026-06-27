@@ -57,12 +57,13 @@ export default function Navbar() {
     const handleLogout = async () => {
         try {
             await logoutUser();
-            notify.info('Logged out successfully.');
+            notify.logoutSuccess();
         } catch (error) {
             notify.error(error);
         } finally {
             logout();
             setProfileMenuOpen(false);
+            router.push('/');
         }
     };
 
