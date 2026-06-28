@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
+import Cart from '../models/Cart.js';
+import { sendAccountDeletedEmail } from '../utils/notificationEmails.js';
 
 // Get logged in user profile
 const getProfile = asyncHandler(async (req, res) => {
@@ -65,4 +67,29 @@ const updateProfile = asyncHandler(async (req, res) => {
     });
 });
 
-export { getProfile, updateProfile };
+const deleteAccount = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User not found');
+    }
+
+    await sendAccountDeletedEmail(user);
+    await Cart.deleteOne({ user: user._id });
+    await user.deleteOne();
+
+    res.cookie('token', '', {
+        httpOnly: true,
+        expires: new Date(0),
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Account deleted successfully',
+    });
+});
+
+export { getProfile, updateProfile, deleteAccount };

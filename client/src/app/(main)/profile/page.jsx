@@ -1,14 +1,18 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { getProfile, updateProfile } from "@/services/user.service";
+import { deleteAccount, getProfile, updateProfile } from "@/services/user.service";
 import Link from "next/link";
-import { Pencil, AlertCircle, Loader2, Package, Mail, Phone as PhoneIcon, User as UserIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Pencil, AlertCircle, Loader2, Package, Mail, Phone as PhoneIcon, Trash2, User as UserIcon, X } from "lucide-react";
 import { motion } from "motion/react";
 import { buttonMotion, fadeUp, scaleFade, staggerContainer, staggerItem } from "@/lib/animations";
 import { notify } from "@/lib/feedback";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
+    const router = useRouter();
+    const { logout } = useAuth();
     const [error, setError] = useState('');
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -16,6 +20,9 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
     const [saving, setSaving] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -80,6 +87,37 @@ export default function ProfilePage() {
     const handleCancel = () => {
         setError('');
         setIsEditing(false);
+    };
+
+    const openDeleteConfirm = () => {
+        setDeleteConfirmText('');
+        setShowDeleteConfirm(true);
+    };
+
+    const closeDeleteConfirm = () => {
+        if (deleting) return;
+        setDeleteConfirmText('');
+        setShowDeleteConfirm(false);
+    };
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText.trim().toLowerCase() !== profile.email.toLowerCase()) {
+            notify.info('Type your email address to confirm account deletion');
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            await deleteAccount();
+            logout();
+            notify.accountDeleted();
+            router.push('/');
+        } catch (error) {
+            console.log(error);
+            notify.error(error);
+        } finally {
+            setDeleting(false);
+        }
     };
 
     const initials = profile?.name
@@ -310,7 +348,107 @@ export default function ProfilePage() {
                     </Link>
                 </motion.div>
 
+                <motion.div className="bg-white rounded-2xl border border-red-100 shadow-sm p-5 mt-5" {...scaleFade}>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <p className="flex items-center gap-2 font-semibold text-slate-900">
+                                <span className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
+                                    <Trash2 size={17} />
+                                </span>
+                                Delete account
+                            </p>
+                            <p className="text-sm text-slate-500 mt-2 sm:ml-11">
+                                Permanently remove your account and saved profile details.
+                            </p>
+                        </div>
+                        <motion.button
+                            onClick={openDeleteConfirm}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 border border-red-200 hover:bg-red-50 transition-colors"
+                            {...buttonMotion}
+                        >
+                            <Trash2 size={15} />
+                            Delete
+                        </motion.button>
+                    </div>
+                </motion.div>
+
             </motion.div>
+
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <motion.div
+                        className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md overflow-hidden"
+                        {...scaleFade}
+                    >
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <div className="flex items-center gap-3">
+                                <span className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600">
+                                    <Trash2 size={18} />
+                                </span>
+                                <div>
+                                    <h2 className="font-semibold text-slate-900">Delete account?</h2>
+                                    <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={closeDeleteConfirm}
+                                disabled={deleting}
+                                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 transition-colors"
+                                aria-label="Close"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="px-6 py-5 space-y-4">
+                            <p className="text-sm text-slate-600 leading-6">
+                                Your account login, profile details, saved addresses, and cart will be removed.
+                                Existing order records may remain for store records.
+                            </p>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    Type your email to confirm
+                                </label>
+                                <input
+                                    value={deleteConfirmText}
+                                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                    disabled={deleting}
+                                    placeholder={profile.email}
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition disabled:bg-slate-50 disabled:text-slate-400"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3 sm:justify-end">
+                            <button
+                                onClick={closeDeleteConfirm}
+                                disabled={deleting}
+                                className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-600 border border-slate-200 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                            >
+                                Keep account
+                            </button>
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deleting || deleteConfirmText.trim().toLowerCase() !== profile.email.toLowerCase()}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+                            >
+                                {deleting ? (
+                                    <>
+                                        <Loader2 size={15} className="animate-spin" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 size={15} />
+                                        Delete account
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </main>
     );
 }

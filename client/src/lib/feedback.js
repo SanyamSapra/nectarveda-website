@@ -22,6 +22,7 @@ export const notify = {
     orderPlaced: () => toast.success('Order placed', { description: 'Check your orders for details' }),
     orderCancelled: () => toast.success('Order cancelled', { description: 'Refund will be processed shortly' }),
     profileSaved: () => toast.success('Profile updated', { description: 'Your changes have been saved' }),
+    accountDeleted: () => toast.success('Account deleted', { description: 'Your NectarVeda account has been removed' }),
     addressSaved: () => toast.success('Address saved'),
     error: (err) => toast.error(getErrorMessage(err)),
     info: (msg) => toast.info(msg),

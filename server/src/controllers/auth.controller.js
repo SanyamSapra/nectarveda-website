@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
 import generateOtp from "../utils/generateOtp.js";
 import sendEmail from "../utils/sendEmail.js";
+import { sendWelcomeEmail } from "../utils/notificationEmails.js";
 
 // Register a new user
 const registerUser = asyncHandler(async (req, res) => {
@@ -107,6 +108,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
     user.otp = undefined;
     user.otpExpiry = undefined;
     await user.save();
+    await sendWelcomeEmail(user);
 
     // Now generate token and login
     const token = generateToken(user._id);

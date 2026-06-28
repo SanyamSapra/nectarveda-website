@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct } from '../controllers/product.controller.js';
+import { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getTopSellingProducts } from '../controllers/product.controller.js';
 import protect from '../middleware/auth.middleware.js';
 import admin from '../middleware/admin.middleware.js';
 import upload from '../middleware/upload.middleware.js';
@@ -8,6 +8,7 @@ const router = express.Router();
 
 // Public Routes
 router.get('/', getAllProducts);
+router.get("/top-selling", getTopSellingProducts);
 router.get('/:id', getProductById);
 
 // Admin Routes

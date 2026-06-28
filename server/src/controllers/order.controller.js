@@ -2,6 +2,36 @@ import asyncHandler from 'express-async-handler'
 import Order from '../models/Order.js'
 import Cart from '../models/Cart.js'
 import Product from '../models/Product.js'
+import User from '../models/User.js'
+import {
+    sendAdminLowStockEmail,
+    sendAdminOrderPlacedEmail,
+    sendOrderCancelledEmail,
+    sendOrderPlacedEmail,
+    sendOrderStatusEmail
+} from '../utils/notificationEmails.js'
+
+const configuredLowStockThreshold = Number(process.env.LOW_STOCK_THRESHOLD);
+const LOW_STOCK_THRESHOLD = Number.isFinite(configuredLowStockThreshold)
+    ? configuredLowStockThreshold
+    : 5;
+
+const getAdminEmailRecipients = async () => {
+    if (process.env.ADMIN_EMAIL) {
+        return process.env.ADMIN_EMAIL.split(',').map(email => email.trim()).filter(Boolean);
+    }
+
+    const admins = await User.find({ role: 'admin' }).select('email');
+    return admins.map(admin => admin.email).filter(Boolean);
+};
+
+const getOrderCustomer = (order) => {
+    if (order.user?.email) {
+        return order.user;
+    }
+
+    return order.customerSnapshot?.email ? order.customerSnapshot : null;
+};
 
 
 const createOrder = asyncHandler(async (req, res) => {
@@ -41,6 +71,8 @@ const createOrder = asyncHandler(async (req, res) => {
         return total + (item.product.price * item.quantity);
     }, 0)
 
+    const lowStockProducts = [];
+
     for (const item of cart.items) {
         const updatedProduct = await Product.findOneAndUpdate(
             { _id: item.product._id, stock: { $gte: item.quantity } },
@@ -52,14 +84,54 @@ const createOrder = asyncHandler(async (req, res) => {
             res.status(400)
             throw new Error(`Not enough stock available for ${item.product.name}`)
         }
+
+        if (item.product.stock > LOW_STOCK_THRESHOLD && updatedProduct.stock <= LOW_STOCK_THRESHOLD) {
+            lowStockProducts.push({
+                name: updatedProduct.name,
+                stock: updatedProduct.stock,
+            });
+        }
     }
 
     const order = await Order.create({
         user: req.user._id,
+        customerSnapshot: {
+            name: req.user.name,
+            email: req.user.email,
+        },
         items: orderItems,
         totalAmount,
         shippingAddress
     })
+
+    await sendOrderPlacedEmail({
+        user: req.user,
+        order,
+        items: cart.items.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            price: item.product.price
+        }))
+    });
+
+    const adminRecipients = await getAdminEmailRecipients();
+
+    await sendAdminOrderPlacedEmail({
+        to: adminRecipients,
+        user: req.user,
+        order,
+        items: cart.items.map(item => ({
+            product: item.product,
+            quantity: item.quantity,
+            price: item.product.price
+        }))
+    });
+
+    await sendAdminLowStockEmail({
+        to: adminRecipients,
+        products: lowStockProducts,
+        threshold: LOW_STOCK_THRESHOLD
+    });
 
     cart.items = [];
     await cart.save();
@@ -131,9 +203,31 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
         throw new Error('Invalid order status');
     }
 
+    const previousStatus = order.orderStatus;
     order.orderStatus = orderStatus;
 
+    if (previousStatus !== 'cancelled' && orderStatus === 'cancelled') {
+        await order.populate('items.product');
+
+        for (const item of order.items) {
+            await Product.findByIdAndUpdate(
+                item.product._id,
+                { $inc: { stock: item.quantity } },
+                { new: true, runValidators: true }
+            );
+        }
+    }
+
     await order.save();
+    await order.populate('user', 'name email');
+    const customer = getOrderCustomer(order);
+
+    if (customer && order.orderStatus === 'cancelled') {
+        await order.populate('items.product');
+        await sendOrderCancelledEmail({ user: customer, order });
+    } else if (customer) {
+        await sendOrderStatusEmail({ user: customer, order });
+    }
 
     res.status(200).json({
         success: true,
@@ -142,7 +236,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 const cancelOrder = asyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate('items.product');
 
     if (!order) {
         res.status(404);
@@ -161,7 +255,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
     for (const item of order.items) {
         await Product.findByIdAndUpdate(
-            item.product,
+            item.product._id,
             { $inc: { stock: item.quantity } },
             { new: true, runValidators: true }
         );
@@ -169,6 +263,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
     order.orderStatus = 'cancelled';
     await order.save();
+    await sendOrderCancelledEmail({ user: req.user, order });
 
     res.status(200).json({
         success: true,

@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler'
 import mongoose from 'mongoose'
 import Product from '../models/Product.js'
 import Category from '../models/Category.js'
+import Order from '../models/Order.js'
 
 const createSlug = (name) => name
     .toLowerCase()
@@ -160,4 +161,36 @@ const deleteProduct = asyncHandler(async (req, res) => {
     })
 })
 
-export { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct };
+const getTopSellingProducts = asyncHandler(async (req, res) => {
+    const topSelling = await Order.aggregate([
+        { $unwind: "$items" },
+        {
+            $group: {
+                _id: "$items.product",
+                totalSold: { $sum: "$items.quantity" },
+            },
+        },
+        { $sort: { totalSold: -1 } },
+        { $limit: 4 },
+        {
+            $lookup: {
+                from: "products",
+                localField: "_id",
+                foreignField: "_id",
+                as: "product",
+            },
+        },
+        { $unwind: "$product" },
+        {
+            $replaceRoot: {
+                newRoot: {
+                    $mergeObjects: ["$product", { totalSold: "$totalSold" }],
+                },
+            },
+        },
+    ]);
+
+    res.status(200).json({ products: topSelling });
+});
+
+export { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getTopSellingProducts };

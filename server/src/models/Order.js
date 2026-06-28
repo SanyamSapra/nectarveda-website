@@ -7,6 +7,11 @@ const orderSchema = mongoose.Schema({
         required: true
     },
 
+    customerSnapshot: {
+        name: { type: String },
+        email: { type: String },
+    },
+
     items: [
         {
             product: {

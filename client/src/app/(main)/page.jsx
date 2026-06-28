@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getProducts } from '@/services/product.service';
+import { getTopSellingProducts } from '@/services/product.service';
 import Link from 'next/link';
 import { Leaf, ArrowRight, ImageOff, ShieldCheck, Truck, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -15,8 +15,8 @@ export default function HomePage() {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const data = await getProducts();
-                setProducts((data.products ?? []).slice(0, 4));
+                const data = await getTopSellingProducts();
+                setProducts(data.products ?? []);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -83,15 +83,13 @@ export default function HomePage() {
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
 
                 <div className="flex items-end justify-between gap-4 mb-8 sm:mb-10 pb-5 border-b border-slate-200">
-                    <div>
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-700 uppercase mb-1.5">
-                            <Sparkles size={13} strokeWidth={2.5} />
-                            Customer favorites
-                        </span>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-                            Featured products
-                        </h2>
-                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-teal-700 uppercase mb-1.5">
+                        <Sparkles size={13} strokeWidth={2.5} />
+                        Best sellers
+                    </span>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                        Top selling products
+                    </h2>
 
                     <Link
                         href="/products"
@@ -140,60 +138,60 @@ export default function HomePage() {
                                     whileHover={cardHover}
                                     className="h-full"
                                 >
-                                <Link
-                                    href={`/products/${product._id}`}
-                                    className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-                                >
-                                    <div className="relative bg-slate-100 aspect-square overflow-hidden">
-                                        {product.images?.[0] ? (
-                                            <img
-                                                src={product.images[0]}
-                                                alt={product.name}
-                                                loading="lazy"
-                                                className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
-                                                <ImageOff size={26} />
-                                                <span className="text-xs text-slate-400">No image</span>
-                                            </div>
-                                        )}
+                                    <Link
+                                        href={`/products/${product._id}`}
+                                        className="group isolate block h-full bg-white rounded-2xl overflow-hidden shadow-sm ring-1 ring-slate-200/80 hover:shadow-lg hover:ring-teal-200 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                                    >
+                                        <div className="relative bg-slate-100 aspect-square overflow-hidden">
+                                            {product.images?.[0] ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    loading="lazy"
+                                                    className="block h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="h-full flex flex-col items-center justify-center gap-2 text-slate-300">
+                                                    <ImageOff size={26} />
+                                                    <span className="text-xs text-slate-400">No image</span>
+                                                </div>
+                                            )}
 
-                                        {hasDiscount && (
-                                            <span className="absolute top-3 left-3 bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-                                                Sale
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="p-4 sm:p-5">
-                                        <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1">
-                                            {product.name}
-                                        </h3>
-
-                                        <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
-                                            {product.description}
-                                        </p>
-
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <div className="flex items-baseline gap-2">
-                                                <span className="text-xl font-bold text-slate-900 tabular-nums">
-                                                    ₹{displayPrice.toLocaleString('en-IN')}
+                                            {hasDiscount && (
+                                                <span className="absolute top-3 left-3 bg-teal-700 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                                                    Sale
                                                 </span>
-                                                {hasDiscount && (
-                                                    <span className="text-sm text-slate-400 line-through tabular-nums">
-                                                        ₹{product.price.toLocaleString('en-IN')}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <span className="text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
-                                                View
-                                                <ArrowRight size={14} />
-                                            </span>
+                                            )}
                                         </div>
-                                    </div>
-                                </Link>
+
+                                        <div className="p-4 sm:p-5">
+                                            <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1">
+                                                {product.name}
+                                            </h3>
+
+                                            <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
+                                                {product.description}
+                                            </p>
+
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-xl font-bold text-slate-900 tabular-nums">
+                                                        ₹{displayPrice.toLocaleString('en-IN')}
+                                                    </span>
+                                                    {hasDiscount && (
+                                                        <span className="text-sm text-slate-400 line-through tabular-nums">
+                                                            ₹{product.price.toLocaleString('en-IN')}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <span className="text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                                                    View
+                                                    <ArrowRight size={14} />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
                                 </motion.div>
                             );
                         })}

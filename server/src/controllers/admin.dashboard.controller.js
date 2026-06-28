@@ -4,6 +4,10 @@ import User from '../models/User.js';
 import Product from '../models/Product.js';
 
 const getDashboardStats = asyncHandler(async (req, res) => {
+  const configuredLowStockThreshold = Number(process.env.LOW_STOCK_THRESHOLD);
+  const lowStockThreshold = Number.isFinite(configuredLowStockThreshold)
+    ? configuredLowStockThreshold
+    : 5;
   
   // 1. Total revenue from delivered orders
   const revenueResult = await Order.aggregate([
@@ -27,6 +31,12 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
   // 4. Total products
   const totalProducts = await Product.countDocuments();
+
+  // 4a. Low stock products
+  const lowStockProducts = await Product.find({ stock: { $lte: lowStockThreshold } })
+    .sort({ stock: 1, name: 1 })
+    .limit(8)
+    .select('name stock price images');
 
   // 5. Recent 5 orders
   const recentOrders = await Order.find()
@@ -68,6 +78,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       ordersByStatus,
       totalUsers,
       totalProducts,
+      lowStockThreshold,
+      lowStockProducts,
       recentOrders,
       topProducts,
     }

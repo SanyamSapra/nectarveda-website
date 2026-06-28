@@ -105,8 +105,8 @@ export default function AdminOrdersPage() {
         ? statusFiltered.filter(order => {
             const orderId = order._id?.toLowerCase() || ''
             const shortId = order._id?.slice(-6).toLowerCase() || ''
-            const customerName = order.user?.name?.toLowerCase() || ''
-            const customerEmail = order.user?.email?.toLowerCase() || ''
+            const customerName = (order.user?.name || order.customerSnapshot?.name || '').toLowerCase()
+            const customerEmail = (order.user?.email || order.customerSnapshot?.email || '').toLowerCase()
             const status = order.orderStatus?.toLowerCase() || ''
             const amount = String(order.totalAmount || '')
             const items = order.items?.map(item => item.product?.name || '').join(' ').toLowerCase() || ''
@@ -246,8 +246,8 @@ export default function AdminOrdersPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <p className="font-medium text-slate-900 text-sm leading-snug">{order.user?.name}</p>
-                                                    <p className="text-xs text-slate-400 mt-0.5">{order.user?.email}</p>
+                                                    <p className="font-medium text-slate-900 text-sm leading-snug">{order.user?.name || order.customerSnapshot?.name || 'Deleted account'}</p>
+                                                    <p className="text-xs text-slate-400 mt-0.5">{order.user?.email || order.customerSnapshot?.email || 'Account removed'}</p>
                                                 </td>
                                                 <td className="px-5 py-3.5">
                                                     <div className="space-y-0.5">
@@ -295,8 +295,8 @@ export default function AdminOrdersPage() {
                                             <span className="font-mono text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                                                 #{order._id.slice(-6).toUpperCase()}
                                             </span>
-                                            <p className="font-semibold text-slate-900 text-sm mt-1.5">{order.user?.name}</p>
-                                            <p className="text-xs text-slate-400">{order.user?.email}</p>
+                                            <p className="font-semibold text-slate-900 text-sm mt-1.5">{order.user?.name || order.customerSnapshot?.name || 'Deleted account'}</p>
+                                            <p className="text-xs text-slate-400">{order.user?.email || order.customerSnapshot?.email || 'Account removed'}</p>
                                         </div>
                                         <StatusDropdown
                                             value={order.orderStatus}

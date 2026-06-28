@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import api from '@/lib/api'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { ShoppingBag, Users, Package, IndianRupee, TrendingUp, Star, Clock, ImageOff } from 'lucide-react'
+import { ShoppingBag, Users, Package, IndianRupee, TrendingUp, Star, Clock, ImageOff, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 const STATUS_COLORS = {
@@ -99,6 +99,7 @@ export default function AdminDashboardPage() {
         status: status.charAt(0).toUpperCase() + status.slice(1),
         count,
     }))
+    const lowStockCount = stats.lowStockProducts?.length || 0;
 
     return (
         <div className="space-y-6">
@@ -116,6 +117,38 @@ export default function AdminDashboardPage() {
                 <StatCard label="Total Users"    value={stats.totalUsers}    icon={Users}       iconBg="bg-blue-50"    iconColor="text-blue-600"   href="/admin/users" />
                 <StatCard label="Total Products" value={stats.totalProducts} icon={Package}     iconBg="bg-amber-50"   iconColor="text-amber-600"  href="/admin/products" />
             </div>
+
+            {lowStockCount > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle size={18} className="text-amber-600" />
+                            <h2 className="text-base font-semibold text-slate-900">Low stock alert</h2>
+                        </div>
+                        <Link href="/admin/products" className="text-xs font-semibold text-amber-700 hover:text-amber-800 transition-colors">
+                            Manage products →
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {stats.lowStockProducts.map((product) => (
+                            <div key={product._id} className="bg-white border border-amber-100 rounded-xl p-3 flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden shrink-0">
+                                    {product.images?.[0]
+                                        ? <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                        : <div className="w-full h-full flex items-center justify-center"><ImageOff size={14} className="text-slate-300" /></div>
+                                    }
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-slate-900 truncate">{product.name}</p>
+                                    <p className="text-xs text-amber-700 font-medium mt-0.5">
+                                        {product.stock} left · threshold {stats.lowStockThreshold}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Chart + Top Products */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -228,8 +261,8 @@ export default function AdminDashboardPage() {
                                                 </span>
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <p className="font-medium text-slate-900">{order.user?.name}</p>
-                                                <p className="text-xs text-slate-400 mt-0.5">{order.user?.email}</p>
+                                                <p className="font-medium text-slate-900">{order.user?.name || order.customerSnapshot?.name || 'Deleted account'}</p>
+                                                <p className="text-xs text-slate-400 mt-0.5">{order.user?.email || order.customerSnapshot?.email || 'Account removed'}</p>
                                             </td>
                                             <td className="px-5 py-3.5 font-semibold text-slate-900 tabular-nums">
                                                 ₹{order.totalAmount.toLocaleString('en-IN')}

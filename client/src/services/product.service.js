@@ -14,6 +14,11 @@ export const getProductByID = async (id) => {
     return response.data
 }
 
+export const getTopSellingProducts = async () => {
+    const response = await api.get('/api/products/top-selling');
+    return response.data;
+}
+
 export const createProduct = async (productData) => {
     const response = await api.post('/api/products', productData)
     return response.data

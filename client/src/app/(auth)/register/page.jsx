@@ -40,7 +40,7 @@ export default function RegisterPage() {
         disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition`;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-10">
+        <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-10">
             <motion.div className="w-full max-w-md" {...fadeUp}>
                 {/* Card */}
                 <motion.div
@@ -48,7 +48,7 @@ export default function RegisterPage() {
                     {...scaleFade}
                 >
                     {/* Branding inside card */}
-                    <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
+                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
                         <img src="/logo.png" alt="NectarVeda" className="h-10 w-10 object-contain" />
                         <div>
                             <h1 className="text-xl font-bold text-teal-800 leading-tight">NectarVeda</h1>
