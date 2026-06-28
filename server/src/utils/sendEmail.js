@@ -1,30 +1,22 @@
 import nodemailer from "nodemailer";
 
-const createTransporter = () => {
-  const { EMAIL_USER, EMAIL_PASS } = process.env;
-
-  if (!EMAIL_USER || !EMAIL_PASS) {
-    throw new Error("Email service is not configured. Please set EMAIL_USER and EMAIL_PASS.");
-  }
-
-  return nodemailer.createTransport({
-    service: "gmail",
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false,
     auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
-  });
-};
+});
 
 const sendEmail = async ({ to, subject, html }) => {
-  const transporter = createTransporter();
-
-  await transporter.sendMail({
-    from: `"NectarVeda" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
+    await transporter.sendMail({
+        from: `"NectarVeda" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html,
+    });
 };
 
 export default sendEmail;
