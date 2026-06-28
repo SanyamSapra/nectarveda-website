@@ -57,6 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
         // Send OTP email
         await sendEmail({
             to: email,
+            from: process.env.EMAIL_USER || process.env.EMAIL_FROM,
             subject: "Verify your NectarVeda account",
             html: `
         <h2>Welcome to NectarVeda, ${name}!</h2>

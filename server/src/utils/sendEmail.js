@@ -31,11 +31,20 @@ transporter
     .catch((err) => console.error("❌ SMTP Error:", err));
 
 const sendEmail = async ({ to, subject, html, from }) => {
+    const sender = from || process.env.EMAIL_USER || process.env.EMAIL_FROM;
+    const defaultFrom = `"NectarVeda" <${sender}>`;
+
+    if (process.env.EMAIL_FROM && process.env.EMAIL_FROM !== process.env.EMAIL_USER && !from) {
+        console.warn(
+            `WARNING: EMAIL_FROM (${process.env.EMAIL_FROM}) differs from EMAIL_USER (${process.env.EMAIL_USER}). Using EMAIL_USER as sender to match authenticated SMTP credentials.`
+        );
+    }
+
+    console.log(`Sending email from ${defaultFrom} to ${to}`);
+
     try {
         return await transporter.sendMail({
-            from:
-                from ||
-                `"NectarVeda" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+            from: defaultFrom,
             to,
             subject,
             html,
@@ -45,6 +54,5 @@ const sendEmail = async ({ to, subject, html, from }) => {
         throw error;
     }
 };
-
 
 export default sendEmail;
