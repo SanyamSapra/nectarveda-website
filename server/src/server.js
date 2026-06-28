@@ -7,8 +7,8 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-import app from './app.js';  
-import connectDB from './config/db.js';
+const { default: app } = await import('./app.js');
+const { default: connectDB } = await import('./config/db.js');
 
 const PORT = process.env.PORT || 5000;
 

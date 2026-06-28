@@ -8,7 +8,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
 
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
 const OTP_LENGTH = 6;
 const subscribeToStorage = () => () => { };
 const getPendingResetEmail = () => sessionStorage.getItem("pendingResetEmail") || "";

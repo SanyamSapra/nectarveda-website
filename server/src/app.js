@@ -20,27 +20,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URL || '').split(',').map(origin => origin.trim()),
   'http://localhost:3000',
 ].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
+const corsOptions = {
+  origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
+      return;
     }
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-app.options('*', cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 
 // Routes
@@ -53,7 +51,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/addresses', addressRoutes);
 
 app.use('/api/admin/dashboard', adminDashboardRoutes);
-app.use('/api/admin/users', adminUserRoutes); 
+app.use('/api/admin/users', adminUserRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
