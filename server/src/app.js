@@ -14,6 +14,7 @@ import adminDashboardRoutes from './routes/admin.dashboard.routes.js';
 import adminUserRoutes from './routes/admin.user.routes.js';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(express.json());
@@ -21,12 +22,17 @@ app.use(express.urlencoded({ extended: true }));
 
 const allowedOrigins = [
   ...(process.env.CLIENT_URL || '').split(',').map(origin => origin.trim()),
+  'https://nectarveda-website.vercel.app',
   'http://localhost:3000',
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map(origin => origin.replace(/\/$/, ''));
 
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const normalizedOrigin = origin?.replace(/\/$/, '');
+
+    if (!origin || allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
       return;
     }

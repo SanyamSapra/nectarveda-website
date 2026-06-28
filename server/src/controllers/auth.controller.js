@@ -5,6 +5,7 @@ import User from '../models/User.js'
 import generateOtp from "../utils/generateOtp.js";
 import sendEmail from "../utils/sendEmail.js";
 import { sendWelcomeEmail } from "../utils/notificationEmails.js";
+import getAuthCookieOptions from '../utils/cookieOptions.js';
 
 // Register a new user
 const registerUser = asyncHandler(async (req, res) => {
@@ -114,9 +115,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
     const token = generateToken(user._id);
 
     res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        ...getAuthCookieOptions(req),
         maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -147,9 +146,7 @@ const loginUser = asyncHandler(async (req, res) => {
         const token = generateToken(user._id)
 
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            ...getAuthCookieOptions(req),
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
@@ -167,10 +164,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
     res.cookie('token', '', {
-        httpOnly: true,
+        ...getAuthCookieOptions(req),
         expires: new Date(0),
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     })
     res.status(200).json({
         message: 'Logged out successfully'

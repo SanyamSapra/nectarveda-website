@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import Cart from '../models/Cart.js';
 import { sendAccountDeletedEmail } from '../utils/notificationEmails.js';
+import getAuthCookieOptions from '../utils/cookieOptions.js';
 
 // Get logged in user profile
 const getProfile = asyncHandler(async (req, res) => {
@@ -80,10 +81,8 @@ const deleteAccount = asyncHandler(async (req, res) => {
     await user.deleteOne();
 
     res.cookie('token', '', {
-        httpOnly: true,
+        ...getAuthCookieOptions(req),
         expires: new Date(0),
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     res.status(200).json({
