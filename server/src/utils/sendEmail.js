@@ -1,57 +1,46 @@
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+if (!process.env.BREVO_API_KEY) {
+    throw new Error("BREVO_API_KEY is missing.");
+}
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+if (!process.env.EMAIL_FROM) {
+    throw new Error("EMAIL_FROM is missing.");
+}
 
-const port = Number(process.env.EMAIL_PORT || 587);
-
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || "smtp-relay.brevo.com",
-    port,
-    secure: port === 465,
-    requireTLS: port !== 465,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-});
-
-// Verify SMTP once when the server starts
-transporter
-    .verify()
-    .then(() => console.log("✅ Brevo SMTP Connected"))
-    .catch((err) => console.error("❌ SMTP Error:", err));
-
-const sendEmail = async ({ to, subject, html, from }) => {
-    const sender = from || process.env.EMAIL_USER || process.env.EMAIL_FROM;
-    const defaultFrom = `"NectarVeda" <${sender}>`;
-
-    if (process.env.EMAIL_FROM && process.env.EMAIL_FROM !== process.env.EMAIL_USER && !from) {
-        console.warn(
-            `WARNING: EMAIL_FROM (${process.env.EMAIL_FROM}) differs from EMAIL_USER (${process.env.EMAIL_USER}). Using EMAIL_USER as sender to match authenticated SMTP credentials.`
-        );
-    }
-
-    console.log(`Sending email from ${defaultFrom} to ${to}`);
-
+const sendEmail = async ({ to, subject, html, text = "" }) => {
     try {
-        return await transporter.sendMail({
-            from: defaultFrom,
-            to,
-            subject,
-            html,
-        });
+        const { data } = await axios.post(
+            "https://api.brevo.com/v3/smtp/email",
+            {
+                sender: {
+                    name: process.env.EMAIL_FROM_NAME || "NectarVeda",
+                    email: process.env.EMAIL_FROM,
+                },
+                to: [{ email: to }],
+                subject,
+                htmlContent: html,
+                textContent: text,
+            },
+            {
+                headers: {
+                    "api-key": process.env.BREVO_API_KEY,
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                timeout: 15000,
+            }
+        );
+
+        return data;
     } catch (error) {
-        console.error("Email sending failed:", error);
-        throw error;
+        const message =
+            error.response?.data?.message ||
+            error.response?.data ||
+            error.message;
+
+        console.error("Brevo Email Error:", message);
+        throw new Error(message);
     }
 };
 
