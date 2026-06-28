@@ -3,10 +3,12 @@ import User from '../models/User.js';
 
 const protect = async (req, res, next) => {
     try {
-        const token =
-            req.headers.authorization?.startsWith('Bearer')
-                ? req.headers.authorization.split(' ')[1]
-                : req.cookies?.token || null
+        const authHeader = req.headers.authorization;
+        const tokenFromHeader = authHeader?.startsWith('Bearer ')
+            ? authHeader.split(' ')[1]
+            : null;
+
+        const token = tokenFromHeader || req.cookies?.token || null;
 
         if (!token) {
             const error = new Error('Not authorized, no token')
