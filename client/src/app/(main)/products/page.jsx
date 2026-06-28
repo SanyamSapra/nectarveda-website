@@ -26,7 +26,7 @@ function ProductsPageContent() {
             setError(null);
             try {
                 const [productsData, categoriesData] = await Promise.all([
-                    getProducts(),
+                    getProducts('', '', { featured: true }),
                     getCategories()
                 ]);
                 setProducts(productsData.products ?? []);
@@ -135,7 +135,7 @@ function ProductsPageContent() {
                         Our products
                     </h1>
                     <p className="mt-2 text-slate-500">
-                        Natural Ayurvedic solutions for your wellness journey.
+                        Featured Ayurvedic solutions for your wellness journey.
                     </p>
                 </div>
 
@@ -150,7 +150,7 @@ function ProductsPageContent() {
                                 }`}
                             {...buttonMotion}
                         >
-                            All products
+                            Featured products
                         </motion.button>
 
                         {categories.map((cat) => (
@@ -176,7 +176,7 @@ function ProductsPageContent() {
                             <SearchX className="text-slate-400" size={28} />
                         </div>
                         <h3 className="text-xl font-semibold text-slate-900">
-                            {searchFromURL ? `No products matching "${searchFromURL}"` : 'No products here yet'}
+                            {searchFromURL ? `No featured products matching "${searchFromURL}"` : 'No featured products here yet'}
                         </h3>
                         <p className="text-slate-500 mt-2 max-w-sm mx-auto">
                             {searchFromURL

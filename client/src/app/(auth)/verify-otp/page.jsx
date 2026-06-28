@@ -8,8 +8,8 @@ import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
 import { Leaf, MailCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { resendOtp, verifyOtp } from "@/services/auth.service";
 
-const API_URL = "http://localhost:5000/api/auth";
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 30;
 
@@ -21,10 +21,6 @@ function maskEmail(email) {
     if (!email || !email.includes("@")) return "";
     const [name, domain] = email.split("@");
     return `${name.charAt(0)}***@${domain}`;
-}
-
-function getErrorMessage(error) {
-    return error?.message || "Something went wrong. Please try again.";
 }
 
 export default function VerifyOtpPage() {
@@ -93,15 +89,7 @@ export default function VerifyOtpPage() {
         }
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/verify-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, otp: otpValue }),
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data?.message || data?.error || "OTP verification failed.");
-            }
+            const data = await verifyOtp({ email, otp: otpValue });
             setIsNavigatingAway(true);
             const verifiedUser = data.user || data;
             sessionStorage.removeItem("pendingVerifyEmail");
@@ -110,7 +98,7 @@ export default function VerifyOtpPage() {
             toast.success("Account verified successfully.");
             router.replace("/");
         } catch (error) {
-            toast.error(getErrorMessage(error));
+            toast.error(error?.response?.data?.message || error?.response?.data?.error || error?.message || "OTP verification failed.");
             setIsNavigatingAway(false);
         } finally {
             setLoading(false);
@@ -121,21 +109,13 @@ export default function VerifyOtpPage() {
         if (cooldown > 0 || resending) return;
         setResending(true);
         try {
-            const response = await fetch(`${API_URL}/resend-otp`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data?.message || data?.error || "Unable to resend OTP.");
-            }
+            await resendOtp(email);
             toast.success("OTP sent again.");
             setCooldown(RESEND_COOLDOWN);
             setOtp(Array(OTP_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
         } catch (error) {
-            toast.error(getErrorMessage(error));
+            toast.error(error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to resend OTP.");
         } finally {
             setResending(false);
         }

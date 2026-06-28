@@ -10,10 +10,16 @@ const createSlug = (name) => name
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-');
 
+const normalizeSku = (sku) => {
+    if (typeof sku !== 'string') return sku;
+    const trimmedSku = sku.trim();
+    return trimmedSku || undefined;
+};
+
 // Get all products
 // Get all products
 const getAllProducts = asyncHandler(async (req, res) => {
-    const { search, category } = req.query;
+    const { search, category, featured } = req.query;
 
     const query = {};
 
@@ -26,6 +32,12 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
     if (category) {
         query.category = category;
+    }
+
+    if (featured === 'true') {
+        query.isFeatured = true;
+    } else if (featured === 'false') {
+        query.isFeatured = false;
     }
 
     const products = await Product.find(query).populate('category');
@@ -104,7 +116,7 @@ const createProduct = asyncHandler(async (req, res) => {
         price: numericPrice,
         salePrice: numericSalePrice,
         stock: numericStock,
-        sku,
+        sku: normalizeSku(sku),
         category,
         images,
         conditions,
@@ -127,9 +139,22 @@ const updateProduct = asyncHandler(async (req, res) => {
         req.body.images = req.files.map(file => file.path);
     }
 
+    const update = { ...req.body };
+    const unset = {};
+
+    if ('sku' in update) {
+        const normalizedSku = normalizeSku(update.sku);
+        if (normalizedSku === undefined) {
+            delete update.sku;
+            unset.sku = '';
+        } else {
+            update.sku = normalizedSku;
+        }
+    }
+
     const product = await Product.findByIdAndUpdate(
         req.params.id,
-        req.body,
+        Object.keys(unset).length ? { $set: update, $unset: unset } : update,
         { new: true, runValidators: true }
     );
 

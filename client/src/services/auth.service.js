@@ -11,6 +11,16 @@ export const loginUser = async (userData) => {
     return response.data
 }
 
+export const verifyOtp = async (verificationData) => {
+    const response = await api.post('/api/auth/verify-otp', verificationData)
+    return response.data
+}
+
+export const resendOtp = async (email) => {
+    const response = await api.post('/api/auth/resend-otp', { email })
+    return response.data
+}
+
 export const logoutUser = async () => {
     const response = await api.post('/api/auth/logout')
     return response.data

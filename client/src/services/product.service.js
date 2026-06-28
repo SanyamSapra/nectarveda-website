@@ -1,9 +1,10 @@
 import api from "@/lib/api";
 
-export const getProducts = async (search = '', category = '') => {
+export const getProducts = async (search = '', category = '', options = {}) => {
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (category) params.append('category', category);
+    if (options.featured !== undefined) params.append('featured', String(options.featured));
     
     const response = await api.get(`/api/products?${params.toString()}`);
     return response.data;
