@@ -66,11 +66,17 @@ const registerUser = asyncHandler(async (req, res) => {
       `,
         });
     } catch (error) {
+        console.error('Registration: failed to send verification email', error);
         if (createdUser) {
             await User.deleteOne({ _id: user._id });
         }
 
-        throw error;
+        // In development return the original error for debugging, in production return a generic message
+        if (process.env.NODE_ENV !== 'production') {
+            throw error;
+        }
+
+        throw new Error('Unable to send verification email. Please contact support.');
     }
 
     res.status(201).json({

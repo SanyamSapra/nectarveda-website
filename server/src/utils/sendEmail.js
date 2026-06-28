@@ -1,54 +1,50 @@
-// import dotenv from "dotenv";
-// import path from "path";
-// import { fileURLToPath } from "url";
-// import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import nodemailer from "nodemailer";
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
-// const createTransporter = () =>
-//     nodemailer.createTransport({
-//         host: process.env.EMAIL_HOST || "smtp-relay.brevo.com",
-//         port: Number(process.env.EMAIL_PORT || 587),
-//         secure: false,
-//         requireTLS: true,
-//         family: 4,
-//         auth: {
-//             user: process.env.EMAIL_USER,
-//             pass: process.env.EMAIL_PASS,
-//         },
-//         connectionTimeout: 10000,
-//         greetingTimeout: 10000,
-//         socketTimeout: 10000,
-//     });
+const port = Number(process.env.EMAIL_PORT || 587);
 
-// const sendEmail = async ({ to, subject, html, from }) => {
-//     const transporter = createTransporter();
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || "smtp-relay.brevo.com",
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+});
 
-//     await transporter.verify();
-//     await transporter.sendMail({
-//         from: from || `"NectarVeda" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
-//         to,
-//         subject,
-//         html,
-//     });
-// };
+// Verify SMTP once when the server starts
+transporter
+    .verify()
+    .then(() => console.log("✅ Brevo SMTP Connected"))
+    .catch((err) => console.error("❌ SMTP Error:", err));
 
-// export default sendEmail;
-
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const sendEmail = async ({ to, subject, html }) => {
-    await resend.emails.send({
-        from: 'NectarVeda <onboarding@resend.dev>',
-        to,
-        subject,
-        html,
-    });
+const sendEmail = async ({ to, subject, html, from }) => {
+    try {
+        return await transporter.sendMail({
+            from:
+                from ||
+                `"NectarVeda" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+            to,
+            subject,
+            html,
+        });
+    } catch (error) {
+        console.error("Email sending failed:", error);
+        throw error;
+    }
 };
+
 
 export default sendEmail;
