@@ -49,24 +49,28 @@ function Sidebar({ onClose }) {
     };
 
     return (
-        <aside className="w-72 bg-white border-r border-slate-200 flex flex-col h-full">
+        // w-72 on desktop, but cap at 80vw on mobile so it never overflows
+        <aside className="w-[min(288px,80vw)] bg-white border-r border-slate-200 flex flex-col h-full">
 
             {/* Logo */}
-            <div className="h-[88px] px-6 border-b border-slate-200 flex items-center justify-between">
+            <div className="h-16 px-4 sm:px-6 border-b border-slate-200 flex items-center justify-between shrink-0">
                 <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
-                    <div className="relative w-12 h-12 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-teal-50 to-emerald-50">
+                    <div className="relative w-9 h-9 shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-teal-50 to-emerald-50">
                         <Image src="/logo.png" alt="NectarVeda" fill priority className="object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
                     <div>
-                        <span className="text-xl font-extrabold tracking-tight text-teal-700 leading-none">NECTARVEDA</span>
-                        <div className="flex items-center gap-1 mt-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
-                            <ShieldCheck size={11} />
+                        <span className="text-base font-extrabold tracking-tight text-teal-700 leading-none">NECTARVEDA</span>
+                        <div className="flex items-center gap-1 mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-emerald-600">
+                            <ShieldCheck size={10} />
                             Admin Panel
                         </div>
                     </div>
                 </Link>
 
-                <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+                <button
+                    onClick={onClose}
+                    className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                >
                     <X size={18} />
                 </button>
             </div>
@@ -87,7 +91,7 @@ function Sidebar({ onClose }) {
                                     : 'text-slate-600 hover:bg-slate-100 hover:text-teal-700'
                             }`}
                         >
-                            <Icon size={18} />
+                            <Icon size={18} className="shrink-0" />
                             {label}
                         </Link>
                     );
@@ -95,7 +99,7 @@ function Sidebar({ onClose }) {
             </nav>
 
             {/* Profile + Logout */}
-            <div className="border-t border-slate-200 p-4 space-y-1">
+            <div className="border-t border-slate-200 p-3 space-y-1 shrink-0">
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100 mb-2">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-700 text-sm font-bold text-white">
                         {adminInitial}
@@ -110,7 +114,7 @@ function Sidebar({ onClose }) {
                     onClick={handleLogout}
                     className="group flex h-11 w-full items-center gap-3 rounded-xl px-4 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
                 >
-                    <LogOut size={17} className="group-hover:-translate-x-0.5 transition-transform duration-200" />
+                    <LogOut size={17} className="shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200" />
                     Logout
                 </button>
             </div>
@@ -129,7 +133,7 @@ export default function AdminLayout({ children }) {
         <AdminRoute>
             <div className="min-h-screen bg-slate-50 flex">
 
-                {/* Desktop Sidebar */}
+                {/* Desktop Sidebar — fixed */}
                 <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72">
                     <Sidebar onClose={() => {}} />
                 </div>
@@ -143,32 +147,35 @@ export default function AdminLayout({ children }) {
                     />
                 )}
 
-                {/* Mobile Sidebar */}
+                {/* Mobile Sidebar — slide in from left */}
                 <div className={`fixed inset-y-0 left-0 z-50 flex lg:hidden transition-transform duration-300 ease-in-out ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                     <Sidebar onClose={() => setMobileOpen(false)} />
                 </div>
 
-                {/* Main */}
-                <div className="flex-1 flex flex-col min-h-screen lg:ml-72">
+                {/* Main content */}
+                <div className="flex-1 flex flex-col min-h-screen lg:ml-72 min-w-0">
 
-                    {/* Top Bar — matches Navbar height and style */}
-                    <header className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-lg border-b border-slate-200 shadow-sm px-4 sm:px-6 flex items-center gap-3">
+                    {/* Top Bar */}
+                    <header className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-lg border-b border-slate-200 shadow-sm px-4 flex items-center gap-3 shrink-0">
                         <button
                             onClick={() => setMobileOpen(true)}
-                            className="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden transition-colors"
+                            className="p-2 -ml-1 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden transition-colors shrink-0"
                             aria-label="Open menu"
                         >
                             <Menu size={20} />
                         </button>
 
-                        <nav className="flex items-center gap-1.5 text-sm">
-                            <span className="text-slate-400 font-medium">Admin</span>
-                            <ChevronRight size={14} className="text-slate-300" />
-                            <span className="font-semibold text-slate-800">{isSubPage ? pageTitle : 'Dashboard'}</span>
+                        <nav className="flex items-center gap-1.5 text-sm min-w-0">
+                            <span className="text-slate-400 font-medium shrink-0">Admin</span>
+                            <ChevronRight size={14} className="text-slate-300 shrink-0" />
+                            <span className="font-semibold text-slate-800 truncate">
+                                {isSubPage ? pageTitle : 'Dashboard'}
+                            </span>
                         </nav>
                     </header>
 
-                    <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                    {/* Page content — NO padding here; each page manages its own */}
+                    <main className="flex-1 min-w-0">
                         {children}
                     </main>
                 </div>

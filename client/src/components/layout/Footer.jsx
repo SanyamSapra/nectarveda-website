@@ -1,10 +1,10 @@
-import Link from 'next/link';
-import { Mail, Phone, MapPin, Leaf } from 'lucide-react';
-import Image from 'next/image';
+'use client'
 
-// lucide-react dropped brand/social icons (trademarked logos) from its
-// core set, so these are small inline SVGs instead of a library import.
-// Mimic lucide's API: accept `size` and map it to width/height.
+import Link from 'next/link';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+
 const InstagramIcon = ({ size = 24, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -32,13 +32,6 @@ const quickLinks = [
     { href: '/profile', label: 'Profile' },
 ];
 
-const categories = [
-    { href: '/products?category=hair-care', label: 'Hair Care' },
-    { href: '/products?category=skin-care', label: 'Skin Care' },
-    { href: '/products?category=health-wellness', label: 'Health & Wellness' },
-    { href: '/products?category=herbal-supplements', label: 'Herbal Supplements' },
-];
-
 const socialLinks = [
     { href: 'https://instagram.com', label: 'Instagram', icon: InstagramIcon },
     { href: 'https://facebook.com', label: 'Facebook', icon: FacebookIcon },
@@ -46,6 +39,24 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+    const [categories, setCategories] = useState([]);
+    const [loadingCats, setLoadingCats] = useState(true);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
+                const data = await res.json();
+                setCategories((data.categories ?? []).slice(0, 5));
+            } catch {
+                setCategories([]);
+            } finally {
+                setLoadingCats(false);
+            }
+        };
+        fetchCategories();
+    }, []);
+
     return (
         <footer className="bg-slate-900 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
@@ -56,13 +67,13 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="sm:col-span-2 lg:col-span-1">
                         <Link href="/" className="inline-flex items-center gap-2.5 group">
-                            <div className="w-9 h-9 rounded-full bg-linear-to-br from-teal-50 to-emerald-50 flex items-center justify-center shrink-0 transition-colors">
-                                <Image  
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                                <Image
                                     src="/logo.png"
-                                    width={60}
-                                    height={60}
+                                    width={36}
+                                    height={36}
                                     alt="NectarVeda Logo"
-                                    className="object-cover"
+                                    className="object-contain"
                                 />
                             </div>
                             <span className="text-xl font-extrabold tracking-tight text-white">
@@ -96,23 +107,34 @@ export default function Footer() {
                     </div>
 
                     {/* Categories */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
-                            Categories
-                        </h3>
-                        <ul className="space-y-3">
-                            {categories.map((cat) => (
-                                <li key={cat.href}>
-                                    <Link
-                                        href={cat.href}
-                                        className="text-slate-400 hover:text-teal-300 transition-colors text-sm"
-                                    >
-                                        {cat.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {(loadingCats || categories.length > 0) && (
+                        <div>
+                            <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-5">
+                                Categories
+                            </h3>
+                            <ul className="space-y-3">
+                                {loadingCats ? (
+                                    // Skeleton loader
+                                    Array.from({ length: 4 }).map((_, i) => (
+                                        <li key={i}>
+                                            <div className="h-3 bg-slate-700 rounded animate-pulse w-3/4" />
+                                        </li>
+                                    ))
+                                ) : (
+                                    categories.map((cat) => (
+                                        <li key={cat._id}>
+                                            <Link
+                                                href={`/products?category=${cat._id}`}
+                                                className="text-slate-400 hover:text-teal-300 transition-colors text-sm"
+                                            >
+                                                {cat.name}
+                                            </Link>
+                                        </li>
+                                    ))
+                                )}
+                            </ul>
+                        </div>
+                    )}
 
                     {/* Contact */}
                     <div>
@@ -147,7 +169,6 @@ export default function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-slate-800 mt-12 pt-7 flex flex-col-reverse sm:flex-row items-center justify-between gap-5">
-
                     <p className="text-slate-500 text-sm text-center sm:text-left">
                         © 2026 NectarVeda. All rights reserved.
                     </p>
@@ -166,7 +187,6 @@ export default function Footer() {
                             </a>
                         ))}
                     </div>
-
                 </div>
 
             </div>
