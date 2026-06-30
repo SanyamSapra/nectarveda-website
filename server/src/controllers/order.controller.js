@@ -42,6 +42,33 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new Error('Shipping address is required')
     }
 
+    const requiredAddressFields = ['street', 'city', 'state', 'pincode', 'phone'];
+    const hasMissingAddressField = requiredAddressFields.some(field => !shippingAddress[field]?.trim());
+
+    if (hasMissingAddressField) {
+        res.status(400);
+        throw new Error('Please provide a complete delivery address');
+    }
+
+    if (!/^\d{6}$/.test(shippingAddress.pincode)) {
+        res.status(400);
+        throw new Error('Pincode must be exactly 6 digits');
+    }
+
+    if (!/^\d{10}$/.test(shippingAddress.phone)) {
+        res.status(400);
+        throw new Error('Phone must be exactly 10 digits');
+    }
+
+    const deliveryAddress = {
+        street: shippingAddress.street.trim(),
+        landmark: shippingAddress.landmark?.trim(),
+        city: shippingAddress.city.trim(),
+        state: shippingAddress.state.trim(),
+        pincode: shippingAddress.pincode.trim(),
+        phone: shippingAddress.phone.trim(),
+    };
+
     const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
 
     if (!cart || cart.items.length === 0) {
@@ -101,7 +128,7 @@ const createOrder = asyncHandler(async (req, res) => {
         },
         items: orderItems,
         totalAmount,
-        shippingAddress
+        shippingAddress: deliveryAddress
     })
 
     await sendOrderPlacedEmail({

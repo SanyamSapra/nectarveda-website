@@ -18,6 +18,7 @@ const escapeHtml = (value = "") =>
 const registerUser = asyncHandler(async (req, res) => {
     const name = req.body.name?.trim();
     const email = req.body.email?.trim().toLowerCase();
+    const phone = req.body.phone?.trim();
     const { password } = req.body;
 
     if (!name || !email || !password) {
@@ -28,6 +29,11 @@ const registerUser = asyncHandler(async (req, res) => {
     if (password.length < 6) {
         res.status(400);
         throw new Error("Password must be at least 6 characters long");
+    }
+
+    if (phone && !/^\d{10}$/.test(phone)) {
+        res.status(400);
+        throw new Error("Phone must be exactly 10 digits");
     }
 
     const userExists = await User.findOne({ email });
@@ -46,6 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     if (user) {
         user.name = name;
+        user.phone = phone || undefined;
         user.password = hashedPassword;
         user.otp = otp;
         user.otpExpiry = otpExpiry;
@@ -53,6 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
         user = await User.create({
             name,
             email,
+            phone: phone || undefined,
             password: hashedPassword,
             otp,
             otpExpiry,
@@ -150,6 +158,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
         token,
     });
@@ -182,6 +191,7 @@ const loginUser = asyncHandler(async (req, res) => {
             _id: user._id,
             name: user.name,
             email: user.email,
+            phone: user.phone,
             role: user.role,
             token
         })

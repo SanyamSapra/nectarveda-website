@@ -7,7 +7,8 @@ const errorMiddleware = (err, req, res, next) => {
         message = Object.values(err.errors)
             .map((error) => {
                 if (error.path === 'email') return 'Please enter a valid email address.';
-                if (error.path === 'phone') return 'Please enter a valid 10-digit phone number.';
+                if (error.path?.endsWith('phone')) return 'Please enter a valid 10-digit phone number.';
+                if (error.path?.endsWith('pincode')) return 'Please enter a valid 6-digit pincode.';
                 return error.message;
             })
             .join(', ');

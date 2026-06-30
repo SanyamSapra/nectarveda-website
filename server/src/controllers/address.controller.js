@@ -23,14 +23,33 @@ const addAddress = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 
-    const { label, street, city, state, pincode, phone, isDefault } = req.body;
+    const address = {
+        label: req.body.label?.trim() || 'Home',
+        street: req.body.street?.trim(),
+        landmark: req.body.landmark?.trim(),
+        city: req.body.city?.trim(),
+        state: req.body.state?.trim(),
+        pincode: req.body.pincode?.trim(),
+        phone: req.body.phone?.trim(),
+        isDefault: Boolean(req.body.isDefault),
+    };
 
-    if (!street || !city || !state || !pincode || !phone) {
+    if (!address.street || !address.city || !address.state || !address.pincode || !address.phone) {
         res.status(400);
         throw new Error('All address fields are required');
     }
 
-    user.addresses.push({ label, street, city, state, pincode, phone, isDefault });
+    if (!/^\d{6}$/.test(address.pincode)) {
+        res.status(400);
+        throw new Error('Pincode must be exactly 6 digits');
+    }
+
+    if (!/^\d{10}$/.test(address.phone)) {
+        res.status(400);
+        throw new Error('Phone must be exactly 10 digits');
+    }
+
+    user.addresses.push(address);
 
     await user.save();
 

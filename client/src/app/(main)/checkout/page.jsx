@@ -13,7 +13,7 @@ import { notify } from '@/lib/feedback';
 
 const LABEL_OPTIONS = ['Home', 'Work', 'Other'];
 
-const emptyForm = { label: 'Home', street: '', city: '', state: '', pincode: '', phone: '' };
+const emptyForm = { label: 'Home', street: '', landmark: '', city: '', state: '', pincode: '', phone: '' };
 
 export default function CheckoutPage() {
     const { cart, refreshCart } = useCart();
@@ -28,6 +28,7 @@ export default function CheckoutPage() {
     const [loadingAddresses, setLoadingAddresses] = useState(true);
     const [placingOrder, setPlacingOrder] = useState(false);
     const [orderError, setOrderError] = useState('');
+    const [pincodeStatus, setPincodeStatus] = useState('');
 
     useEffect(() => {
         const fetchAddresses = async () => {
@@ -46,10 +47,61 @@ export default function CheckoutPage() {
         fetchAddresses();
     }, []);
 
+    useEffect(() => {
+        const pincode = newAddress.pincode;
+
+        if (pincode.length !== 6) return;
+
+        const controller = new AbortController();
+
+        const lookupPincode = async () => {
+            setPincodeStatus('Detecting city and state...');
+
+            try {
+                const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, {
+                    signal: controller.signal,
+                });
+                const data = await res.json();
+                const postOffice = data[0]?.PostOffice?.[0];
+
+                if (data[0]?.Status === 'Success' && postOffice) {
+                    setNewAddress(prev => ({
+                        ...prev,
+                        city: postOffice.District || prev.city,
+                        state: postOffice.State || prev.state,
+                    }));
+                    setPincodeStatus('City and state detected. Please check before saving.');
+                    return;
+                }
+
+                setPincodeStatus('Could not detect this pincode. Please enter city and state manually.');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    setPincodeStatus('Pincode lookup failed. You can enter city and state manually.');
+                }
+            }
+        };
+
+        lookupPincode();
+
+        return () => controller.abort();
+    }, [newAddress.pincode]);
+
     const handleFormChange = (e) => {
-        setNewAddress(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name } = e.target;
+        let { value } = e.target;
+
+        if (name === 'pincode') value = value.replace(/\D/g, '').slice(0, 6);
+        if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 10);
+        if (name === 'pincode' && value.length < 6) setPincodeStatus('');
+
+        setNewAddress(prev => ({ ...prev, [name]: value }));
         setFormError('');
     };
+
+    const pincodeHelperText = newAddress.pincode && newAddress.pincode.length < 6
+        ? 'Enter 6 digits to detect city and state.'
+        : pincodeStatus;
 
     const validateForm = () => {
         if (!newAddress.street.trim()) return 'Street address is required';
@@ -76,6 +128,7 @@ export default function CheckoutPage() {
             setSelectedAddressId(data.addresses.at(-1)._id);
             setShowAddForm(false);
             setNewAddress(emptyForm);
+            setPincodeStatus('');
             notify.addressSaved();
         } catch (err) {
             console.log(err);
@@ -99,6 +152,7 @@ export default function CheckoutPage() {
             const data = await createOrder({
                 shippingAddress: {
                     street: selectedAddress.street,
+                    landmark: selectedAddress.landmark,
                     city: selectedAddress.city,
                     state: selectedAddress.state,
                     pincode: selectedAddress.pincode,
@@ -212,8 +266,8 @@ export default function CheckoutPage() {
                                     key={addr._id}
                                     onClick={() => { setSelectedAddressId(addr._id); setOrderError(''); }}
                                     className={`relative flex gap-4 bg-white p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
-                                            ? 'border-teal-600 shadow-sm shadow-teal-100'
-                                            : 'border-slate-200 hover:border-teal-300'
+                                        ? 'border-teal-600 shadow-sm shadow-teal-100'
+                                        : 'border-slate-200 hover:border-teal-300'
                                         }`}
                                     variants={staggerItem}
                                     whileHover={{ y: -2 }}
@@ -235,6 +289,7 @@ export default function CheckoutPage() {
                                             )}
                                         </div>
                                         <p className="text-slate-800 font-medium">{addr.street}</p>
+                                        {addr.landmark && <p className="text-slate-500 text-sm">Landmark: {addr.landmark}</p>}
                                         <p className="text-slate-500 text-sm">{addr.city}, {addr.state} — {addr.pincode}</p>
                                         <p className="text-slate-500 text-sm">+91 {addr.phone}</p>
                                     </div>
@@ -262,8 +317,8 @@ export default function CheckoutPage() {
                                             type="button"
                                             onClick={() => setNewAddress(prev => ({ ...prev, label: opt }))}
                                             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${newAddress.label === opt
-                                                    ? 'bg-teal-700 text-white border-teal-700'
-                                                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-400'
+                                                ? 'bg-teal-700 text-white border-teal-700'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:border-teal-400'
                                                 }`}
                                             {...buttonMotion}
                                         >
@@ -275,6 +330,7 @@ export default function CheckoutPage() {
                                 <div className="grid sm:grid-cols-2 gap-3">
                                     {[
                                         { name: 'street', label: 'Street address', colSpan: 'sm:col-span-2', placeholder: '123 MG Road, Apartment 4B' },
+                                        { name: 'landmark', label: 'Landmark (optional)', colSpan: 'sm:col-span-2', placeholder: 'Near Clock Tower' },
                                         { name: 'city', label: 'City', placeholder: 'Dehradun' },
                                         { name: 'state', label: 'State', placeholder: 'Uttarakhand' },
                                         { name: 'pincode', label: 'Pincode', placeholder: '248001', inputMode: 'numeric' },
@@ -293,6 +349,9 @@ export default function CheckoutPage() {
                                                 disabled={savingAddress}
                                                 className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition disabled:bg-slate-50 disabled:text-slate-400"
                                             />
+                                            {field.name === 'pincode' && pincodeHelperText && (
+                                                <p className="mt-1.5 text-xs text-slate-500">{pincodeHelperText}</p>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -311,7 +370,7 @@ export default function CheckoutPage() {
                                         )}
                                     </motion.button>
                                     <motion.button
-                                        onClick={() => { setShowAddForm(false); setFormError(''); setNewAddress(emptyForm); }}
+                                        onClick={() => { setShowAddForm(false); setFormError(''); setNewAddress(emptyForm); setPincodeStatus(''); }}
                                         disabled={savingAddress}
                                         className="border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 px-6 py-2.5 rounded-xl font-semibold text-sm transition-colors"
                                         {...buttonMotion}

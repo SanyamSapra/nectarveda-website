@@ -146,6 +146,9 @@ export default function OrderDetailPage() {
                         </div>
                         <div className="px-5 py-4">
                             <p className="text-slate-900 font-medium">{order.shippingAddress.street}</p>
+                            {order.shippingAddress.landmark && (
+                                <p className="text-slate-500 text-sm mt-0.5">Landmark: {order.shippingAddress.landmark}</p>
+                            )}
                             <p className="text-slate-500 text-sm mt-0.5">
                                 {order.shippingAddress.city}, {order.shippingAddress.state} — {order.shippingAddress.pincode}
                             </p>

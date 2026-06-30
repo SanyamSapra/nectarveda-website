@@ -7,20 +7,30 @@ import { motion } from "motion/react";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
 import { notify } from "@/lib/feedback";
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();
 
-    const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', password: '' });
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name } = e.target;
+        let { value } = e.target;
+
+        if (name === 'phone') value = value.replace(/\D/g, '').slice(0, 10);
+
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (formData.phone && formData.phone.length !== 10) {
+            notify.info('Phone number must be exactly 10 digits.');
+            return;
+        }
+
         setLoading(true);
         try {
             const data = await registerUser(formData);
@@ -35,41 +45,36 @@ export default function RegisterPage() {
         }
     };
 
-    const inputClass = `w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400
+    const inputClass = `w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400
         focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent
         disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition`;
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-10">
+        <div className="min-h-screen h-screen overflow-y-auto bg-linear-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-6">
             <motion.div className="w-full max-w-md" {...fadeUp}>
                 {/* Card */}
                 <motion.div
-                    className="bg-white rounded-2xl border border-slate-200 shadow-sm p-7 sm:p-8"
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7"
                     {...scaleFade}
                 >
                     {/* Branding inside card */}
                     <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100">
-                        <img src="/logo.png" alt="NectarVeda" className="h-10 w-10 object-contain" />
+                        <img src="/logo.png" alt="NectarVeda" className="h-9 w-9 object-contain" />
                         <div>
-                            <h1 className="text-xl font-bold text-teal-800 leading-tight">NectarVeda</h1>
-                            <p className="text-xs font-semibold text-teal-600 uppercase tracking-widest">Ayurveda & Wellness</p>
+                            <h1 className="text-lg font-bold text-teal-800 leading-tight">NectarVeda</h1>
+                            <p className="text-[11px] font-semibold text-teal-600 uppercase tracking-widest">Ayurveda & Wellness</p>
                         </div>
-                    </div>
-                    <div className="mb-7">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center mb-4">
-                            <UserPlus size={20} className="text-teal-700" />
-                        </div>
-                        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-                            Create account
-                        </h2>
-                        <p className="text-slate-500 text-sm mt-1.5">
-                            Join NectarVeda and start your wellness journey.
-                        </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <div className="mb-4">
+                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                            Create account
+                        </h2>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Full name
                             </label>
                             <input
@@ -85,7 +90,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Email address
                             </label>
                             <input
@@ -101,7 +106,23 @@ export default function RegisterPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                Phone number <span className="text-slate-400 font-normal">(optional)</span>
+                            </label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="9876543210"
+                                inputMode="numeric"
+                                disabled={loading}
+                                className={inputClass}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">
                                 Password
                             </label>
                             <input
@@ -119,7 +140,7 @@ export default function RegisterPage() {
                         <motion.button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-teal-700 hover:bg-teal-800 disabled:bg-teal-300 disabled:cursor-not-allowed text-white py-3 rounded-xl font-semibold shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2"
+                            className="w-full bg-teal-700 hover:bg-teal-800 disabled:bg-teal-300 disabled:cursor-not-allowed text-white py-2.5 rounded-xl font-semibold shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2"
                             {...buttonMotion}
                         >
                             {loading && (
@@ -129,7 +150,7 @@ export default function RegisterPage() {
                         </motion.button>
                     </form>
 
-                    <p className="mt-6 text-center text-sm text-slate-500">
+                    <p className="mt-5 text-center text-sm text-slate-500">
                         Already have an account?{' '}
                         <Link
                             href="/login"
