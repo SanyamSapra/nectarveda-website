@@ -165,7 +165,7 @@ export default function AdminCategoriesPage() {
 
     if (loading) {
         return (
-            <div className="space-y-3 animate-pulse">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-3 animate-pulse">
                 <div className="h-10 w-36 bg-slate-200 rounded-xl" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2, 3].map(i => <div key={i} className="h-28 bg-slate-200 rounded-2xl" />)}
@@ -176,7 +176,7 @@ export default function AdminCategoriesPage() {
 
     return (
         <>
-            <div className="space-y-6">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>

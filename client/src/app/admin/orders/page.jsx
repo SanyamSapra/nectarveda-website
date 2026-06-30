@@ -128,7 +128,7 @@ export default function AdminOrdersPage() {
     }
 
     return (
-        <div className="space-y-5">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-5">
 
             {/* Header */}
             <div className="flex items-center justify-between gap-3 flex-wrap">

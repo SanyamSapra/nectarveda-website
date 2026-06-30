@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
 
     if (loading) {
         return (
-            <div className="space-y-3 animate-pulse px-4 py-4">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-3 animate-pulse">
                 <div className="h-8 w-32 bg-slate-200 rounded-xl" />
                 <div className="h-11 bg-slate-200 rounded-xl" />
                 {[1,2,3].map(i => <div key={i} className="h-20 bg-slate-200 rounded-2xl" />)}
@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
 
     return (
         <>
-            <div className="space-y-4 px-4 py-4 pb-8">
+            <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto space-y-4 pb-8">
 
                 {/* Header */}
                 <div>
