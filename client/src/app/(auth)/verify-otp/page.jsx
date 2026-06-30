@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
-import { Leaf, MailCheck, ArrowLeft } from "lucide-react";
+import { MailCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { resendOtp, verifyOtp } from "@/services/auth.service";
+import { getErrorMessage } from "@/lib/feedback";
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 30;
@@ -98,7 +99,7 @@ export default function VerifyOtpPage() {
             toast.success("Account verified successfully.");
             router.replace("/");
         } catch (error) {
-            toast.error(error?.response?.data?.message || error?.response?.data?.error || error?.message || "OTP verification failed.");
+            toast.error(getErrorMessage(error, "OTP verification failed."));
             setIsNavigatingAway(false);
         } finally {
             setLoading(false);
@@ -115,7 +116,7 @@ export default function VerifyOtpPage() {
             setOtp(Array(OTP_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
         } catch (error) {
-            toast.error(error?.response?.data?.message || error?.response?.data?.error || error?.message || "Unable to resend OTP.");
+            toast.error(getErrorMessage(error, "Unable to resend OTP."));
         } finally {
             setResending(false);
         }

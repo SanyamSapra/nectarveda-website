@@ -7,25 +7,37 @@ import sendEmail from "../utils/sendEmail.js";
 import { sendWelcomeEmail } from "../utils/notificationEmails.js";
 import getAuthCookieOptions from '../utils/cookieOptions.js';
 
-// Register a new user
+const escapeHtml = (value = "") =>
+    String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+    const name = req.body.name?.trim();
+    const email = req.body.email?.trim().toLowerCase();
+    const { password } = req.body;
+
     if (!name || !email || !password) {
         res.status(400);
         throw new Error("Please provide all required fields");
     }
 
-    // Check if user already exists
+    if (password.length < 6) {
+        res.status(400);
+        throw new Error("Password must be at least 6 characters long");
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists?.isVerified) {
         res.status(400);
         throw new Error("User already exists");
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate OTP
     const otp = generateOtp();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -54,13 +66,11 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     try {
-        // Send OTP email
         await sendEmail({
             to: email,
-            from: process.env.EMAIL_USER || process.env.EMAIL_FROM,
             subject: "Verify your NectarVeda account",
             html: `
-        <h2>Welcome to NectarVeda, ${name}!</h2>
+        <h2>Welcome to NectarVeda, ${escapeHtml(name)}!</h2>
         <p>Your OTP for account verification is:</p>
         <h1 style="letter-spacing: 8px; color: #b45309;">${otp}</h1>
         <p>This OTP is valid for <strong>10 minutes</strong>.</p>
@@ -72,12 +82,13 @@ const registerUser = asyncHandler(async (req, res) => {
             await User.deleteOne({ _id: user._id });
         }
 
-        // In development return the original error for debugging, in production return a generic message
         if (process.env.NODE_ENV !== 'production') {
             throw error;
         }
 
-        throw new Error('Unable to send verification email. Please contact support.');
+        const emailError = new Error('Unable to send verification email right now. Please try again in a few minutes.');
+        emailError.statusCode = 503;
+        throw emailError;
     }
 
     res.status(201).json({
@@ -87,7 +98,13 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const verifyOtp = asyncHandler(async (req, res) => {
-    const { email, otp } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const otp = req.body.otp?.trim();
+
+    if (!email || !otp) {
+        res.status(400);
+        throw new Error("Please enter your email and OTP");
+    }
 
     const user = await User.findOne({ email });
 
@@ -103,22 +120,25 @@ const verifyOtp = asyncHandler(async (req, res) => {
 
     if (user.otp !== otp) {
         res.status(400);
-        throw new Error("Invalid OTP");
+        throw new Error("Invalid OTP. Please check the code and try again.");
     }
 
-    if (user.otpExpiry < new Date()) {
+    if (!user.otpExpiry || user.otpExpiry < new Date()) {
         res.status(400);
-        throw new Error("OTP expired");
+        throw new Error("OTP expired. Please request a new one.");
     }
 
-    // Mark user as verified, clear OTP
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpiry = undefined;
     await user.save();
-    await sendWelcomeEmail(user);
+    try {
+        await sendWelcomeEmail(user);
+    } catch (error) {
+        console.error('Failed to send welcome email:', error);
+    }
 
-    // Now generate token and login
+
     const token = generateToken(user._id);
 
     res.cookie("token", token, {
@@ -135,9 +155,9 @@ const verifyOtp = asyncHandler(async (req, res) => {
     });
 });
 
-// Login user
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const { password } = req.body;
     if (!email || !password) {
         res.status(400);
         throw new Error('Please provide all required fields');
@@ -182,7 +202,12 @@ const logoutUser = asyncHandler(async (req, res) => {
 })
 
 const forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+
+    if (!email) {
+        res.status(400);
+        throw new Error("Please enter your email address");
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -190,7 +215,6 @@ const forgotPassword = asyncHandler(async (req, res) => {
         throw new Error("No account found with this email");
     }
 
-    // Generate OTP
     const otp = generateOtp();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -217,7 +241,19 @@ const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-    const { email, otp, newPassword } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const otp = req.body.otp?.trim();
+    const { newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+        res.status(400);
+        throw new Error("Please provide your email, OTP, and new password");
+    }
+
+    if (newPassword.length < 6) {
+        res.status(400);
+        throw new Error("Password must be at least 6 characters long");
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -227,15 +263,14 @@ const resetPassword = asyncHandler(async (req, res) => {
 
     if (user.otp !== otp) {
         res.status(400);
-        throw new Error("Invalid OTP");
+        throw new Error("Invalid OTP. Please check the code and try again.");
     }
 
-    if (user.otpExpiry < new Date()) {
+    if (!user.otpExpiry || user.otpExpiry < new Date()) {
         res.status(400);
-        throw new Error("OTP expired");
+        throw new Error("OTP expired. Please request a new one.");
     }
 
-    // Hash new password and clear OTP
     user.password = await bcrypt.hash(newPassword, 10);
     user.otp = undefined;
     user.otpExpiry = undefined;
@@ -247,38 +282,43 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const resendOtp = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
 
-  const user = await User.findOne({ email });
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
+    if (!email) {
+        res.status(400);
+        throw new Error("Please enter your email address");
+    }
 
-  if (user.isVerified) {
-    res.status(400);
-    throw new Error("User already verified");
-  }
+    const user = await User.findOne({ email });
+    if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+    }
 
-  const otp = generateOtp();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    if (user.isVerified) {
+        res.status(400);
+        throw new Error("User already verified");
+    }
 
-  user.otp = otp;
-  user.otpExpiry = otpExpiry;
-  await user.save();
+    const otp = generateOtp();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-  await sendEmail({
-    to: email,
-    subject: "NectarVeda - Resend OTP",
-    html: `
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    await sendEmail({
+        to: email,
+        subject: "NectarVeda - Resend OTP",
+        html: `
       <h2>Your new OTP</h2>
       <p>Your new OTP for account verification is:</p>
       <h1 style="letter-spacing: 8px; color: #b45309;">${otp}</h1>
       <p>This OTP is valid for <strong>10 minutes</strong>.</p>
     `,
-  });
+    });
 
-  res.status(200).json({ message: "OTP resent successfully" });
+    res.status(200).json({ message: "OTP resent successfully" });
 });
 
 export { registerUser, loginUser, logoutUser, verifyOtp, forgotPassword, resetPassword, resendOtp }

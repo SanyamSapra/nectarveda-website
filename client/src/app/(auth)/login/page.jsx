@@ -8,7 +8,6 @@ import { motion } from 'motion/react';
 import { buttonMotion, fadeUp, scaleFade } from '@/lib/animations';
 import { notify } from '@/lib/feedback';
 import Link from 'next/link';
-import { Leaf } from 'lucide-react';
 
 export default function LoginPage() {
     const { login } = useAuth();

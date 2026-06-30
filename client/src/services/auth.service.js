@@ -1,4 +1,3 @@
-// Ye file backend ke auth routes se baat karegi
 import api from "@/lib/api";
 
 export const registerUser = async (userData) => {

@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
 import { notify } from "@/lib/feedback";
 import Link from "next/link";
-import { Leaf, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 export default function RegisterPage() {
     const router = useRouter();

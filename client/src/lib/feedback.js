@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
 
 export function getErrorMessage(error, fallback = "Something went wrong. Please try again.") {
-    if (error?.code === 'ERR_NETWORK' || !error?.response) {
+    if (error?.code === 'ERR_NETWORK' || error?.message === 'Network Error') {
         return 'Network error. Please check your connection.';
     }
 

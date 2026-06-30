@@ -6,13 +6,10 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
-import { Leaf, ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
+import { getErrorMessage } from "@/lib/feedback";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
-
-function getErrorMessage(error) {
-    return error?.message || "Something went wrong. Please try again.";
-}
 
 export default function ForgotPasswordPage() {
     const router = useRouter();

@@ -3,20 +3,17 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Leaf, KeyRound, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, KeyRound, ArrowLeft } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { buttonMotion, fadeUp, scaleFade } from "@/lib/animations";
+import { getErrorMessage } from "@/lib/feedback";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
 const OTP_LENGTH = 6;
 const subscribeToStorage = () => () => { };
 const getPendingResetEmail = () => sessionStorage.getItem("pendingResetEmail") || "";
 const getServerEmail = () => "";
-
-function getErrorMessage(error) {
-    return error?.message || "Something went wrong. Please try again.";
-}
 
 const inputClass = `w-full px-4 py-3 pr-12 rounded-xl border border-slate-300 bg-white text-slate-900
     placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent

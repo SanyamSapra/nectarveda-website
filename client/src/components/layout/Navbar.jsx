@@ -24,6 +24,12 @@ const tabLinks = [
     { href: '/about', label: 'About', icon: Info },
 ];
 
+const getInitialSearchQuery = () => {
+    if (typeof window === 'undefined' || window.location.pathname !== '/products') return '';
+
+    return new URLSearchParams(window.location.search).get('search') || '';
+};
+
 export default function Navbar() {
     const { user, logout } = useAuth();
     const pathname = usePathname();
@@ -33,7 +39,7 @@ export default function Navbar() {
 
     const { cartCount } = useCart();
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(getInitialSearchQuery);
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -44,16 +50,6 @@ export default function Navbar() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        setSearchQuery(pathname === '/products' ? params.get('search') || '' : '');
-    }, [pathname]);
-
-    // Close mobile profile sheet on route change
-    useEffect(() => {
-        setMobileProfileOpen(false);
-    }, [pathname]);
 
     const isActive = (href) => pathname === href;
 
@@ -79,6 +75,7 @@ export default function Navbar() {
 
     const updateSearch = (value) => {
         setSearchQuery(value);
+
         if (pathname === '/products') {
             const query = value.trim();
             router.replace(query ? `/products?search=${encodeURIComponent(query)}` : '/products', { scroll: false });
@@ -254,6 +251,7 @@ export default function Navbar() {
                             <div className="px-3 py-2 space-y-0.5">
                                 <Link
                                     href="/profile"
+                                    onClick={() => setMobileProfileOpen(false)}
                                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors"
                                 >
                                     <User size={18} className="text-slate-500 shrink-0" />
@@ -262,6 +260,7 @@ export default function Navbar() {
 
                                 <Link
                                     href="/orders"
+                                    onClick={() => setMobileProfileOpen(false)}
                                     className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-colors"
                                 >
                                     <Package size={18} className="text-slate-500 shrink-0" />
@@ -291,7 +290,7 @@ export default function Navbar() {
                         const active = isActive(link.href);
                         const Icon = link.icon;
                         return (
-                            <Link key={link.href} href={link.href} className="flex flex-col items-center justify-center gap-1 py-2.5">
+                            <Link key={link.href} href={link.href} onClick={() => setMobileProfileOpen(false)} className="flex flex-col items-center justify-center gap-1 py-2.5">
                                 <Icon size={21} strokeWidth={active ? 2.4 : 2} className={active ? 'text-teal-700' : 'text-stone-400'} />
                                 <span className={`text-[10px] leading-none ${active ? 'text-teal-700 font-semibold' : 'text-stone-500 font-medium'}`}>
                                     {link.label}
@@ -301,7 +300,7 @@ export default function Navbar() {
                     })}
 
                     {/* Cart tab */}
-                    <Link href="/cart" className="flex flex-col items-center justify-center gap-1 py-2.5">
+                    <Link href="/cart" onClick={() => setMobileProfileOpen(false)} className="flex flex-col items-center justify-center gap-1 py-2.5">
                         <div className="relative">
                             <ShoppingCart size={21} strokeWidth={isActive('/cart') ? 2.4 : 2} className={isActive('/cart') ? 'text-teal-700' : 'text-stone-400'} />
                             {cartCount > 0 && (
@@ -323,7 +322,7 @@ export default function Navbar() {
                             <span className={`text-[10px] leading-none ${mobileProfileOpen || isActive('/profile') ? 'text-teal-700 font-semibold' : 'text-stone-500 font-medium'}`}>Profile</span>
                         </button>
                     ) : (
-                        <Link href="/login" className="flex flex-col items-center justify-center gap-1 py-2.5">
+                        <Link href="/login" onClick={() => setMobileProfileOpen(false)} className="flex flex-col items-center justify-center gap-1 py-2.5">
                             <LogIn size={21} strokeWidth={isActive('/login') ? 2.4 : 2} className={isActive('/login') ? 'text-teal-700' : 'text-stone-400'} />
                             <span className={`text-[10px] leading-none ${isActive('/login') ? 'text-teal-700 font-semibold' : 'text-stone-500 font-medium'}`}>Sign in</span>
                         </Link>
