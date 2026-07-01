@@ -126,7 +126,7 @@ export default function ProductDetailPage({ params }) {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 pt-10 pb-20">
+        <main className="min-h-screen bg-slate-50 pt-6 sm:pt-10 pb-20">
             <motion.div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" {...fadeUp}>
 
                 {/* Breadcrumb */}
@@ -138,7 +138,7 @@ export default function ProductDetailPage({ params }) {
                     Back to shop
                 </Link>
 
-                <motion.div className="grid lg:grid-cols-2 gap-10 lg:gap-16" variants={staggerContainer} initial="initial" animate="animate">
+                <motion.div className="grid lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-16" variants={staggerContainer} initial="initial" animate="animate">
 
                     {/* Product Images */}
                     <motion.div variants={staggerItem}>
@@ -242,23 +242,23 @@ export default function ProductDetailPage({ params }) {
                             </div>
                         )}
 
-                        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight tracking-tight">
+                        <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 leading-tight tracking-tight">
                             {product.name}
                         </h1>
 
                         {/* Price */}
-                        <div className="mt-4 flex items-center gap-3">
+                        <div className="mt-3 sm:mt-4 flex items-center gap-2 sm:gap-3">
                             {product.salePrice ? (
                                 <>
-                                    <span className="text-3xl font-bold text-slate-900 tabular-nums">
+                                    <span className="text-2xl sm:text-3xl font-bold text-slate-900 tabular-nums">
                                         ₹{product.salePrice.toLocaleString('en-IN')}
                                     </span>
-                                    <span className="text-lg text-slate-400 line-through tabular-nums">
+                                    <span className="text-base sm:text-lg text-slate-400 line-through tabular-nums">
                                         ₹{product.price.toLocaleString('en-IN')}
                                     </span>
                                 </>
                             ) : (
-                                <span className="text-3xl font-bold text-slate-900 tabular-nums">
+                                <span className="text-2xl sm:text-3xl font-bold text-slate-900 tabular-nums">
                                     ₹{product.price.toLocaleString('en-IN')}
                                 </span>
                             )}
@@ -280,7 +280,7 @@ export default function ProductDetailPage({ params }) {
                             )}
                         </div>
 
-                        <hr className="my-6 border-slate-200" />
+                        <hr className="my-4 sm:my-6 border-slate-200" />
 
                         {/* Description */}
                         <div>
@@ -292,7 +292,7 @@ export default function ProductDetailPage({ params }) {
                             </p>
                         </div>
 
-                        <hr className="my-6 border-slate-200" />
+                        <hr className="my-4 sm:my-6 border-slate-200" />
 
                         {/* Quantity */}
                         <div className="flex items-center gap-4">
@@ -323,7 +323,7 @@ export default function ProductDetailPage({ params }) {
                         </div>
 
                         {/* Add to Cart */}
-                        <div className="mt-8 flex flex-col gap-3">
+                        <div className="mt-6 sm:mt-8 flex flex-col gap-3 sticky bottom-0 sm:static bg-slate-50/95 sm:bg-transparent backdrop-blur sm:backdrop-blur-none py-3 sm:py-0 -mx-4 px-4 sm:mx-0 sm:px-0 border-t border-slate-200 sm:border-0">
                             <motion.button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0 || addingToCart}

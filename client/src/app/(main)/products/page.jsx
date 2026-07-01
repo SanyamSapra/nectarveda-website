@@ -80,11 +80,11 @@ function ProductsPageContent() {
                             ))}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                         {Array.from({ length: 8 }).map((_, i) => (
                             <div key={i} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                                <div className="h-56 bg-slate-100 animate-pulse" />
-                                <div className="p-5 space-y-3">
+                                <div className="aspect-square bg-slate-100 animate-pulse" />
+                                <div className="p-3 sm:p-5 space-y-2 sm:space-y-3">
                                     <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4" />
                                     <div className="h-3 bg-slate-100 rounded animate-pulse w-full" />
                                     <div className="h-6 bg-slate-100 rounded animate-pulse w-1/3 mt-4" />
@@ -131,10 +131,10 @@ function ProductsPageContent() {
                         <Leaf size={13} strokeWidth={2.5} />
                         Shop the range
                     </span>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
+                    <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight">
                         Our products
                     </h1>
-                    <p className="mt-2 text-slate-500">
+                    <p className="mt-2 text-sm sm:text-base text-slate-500">
                         Featured Ayurvedic solutions for your wellness journey.
                     </p>
                 </div>
@@ -144,7 +144,7 @@ function ProductsPageContent() {
                     <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
                         <motion.button
                             onClick={() => setSelectedCategory('all')}
-                            className={`shrink-0 whitespace-nowrap px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 sm:px-5 ${selectedCategory === 'all'
+                            className={`shrink-0 whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${selectedCategory === 'all'
                                 ? 'bg-teal-700 text-white shadow-sm'
                                 : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-700'
                                 }`}
@@ -157,7 +157,7 @@ function ProductsPageContent() {
                             <motion.button
                                 key={cat._id}
                                 onClick={() => setSelectedCategory(cat._id)}
-                                className={`shrink-0 whitespace-nowrap px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200 sm:px-5 ${selectedCategory === cat._id
+                                className={`shrink-0 whitespace-nowrap px-3 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 ${selectedCategory === cat._id
                                     ? 'bg-teal-700 text-white shadow-sm'
                                     : 'bg-white border border-slate-200 text-slate-600 hover:border-teal-500 hover:text-teal-700'
                                     }`}
@@ -198,7 +198,7 @@ function ProductsPageContent() {
                     </motion.div>
                 ) : (
                     /* Products Grid */
-                    <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8" variants={staggerContainer} initial="initial" animate="animate">
+                    <motion.div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8" variants={staggerContainer} initial="initial" animate="animate">
                         {filteredProducts.map((product) => {
                             const hasDiscount = product.salePrice && product.salePrice < product.price;
                             const displayPrice = product.salePrice || product.price;
@@ -246,30 +246,30 @@ function ProductsPageContent() {
                                         </div>
 
                                         {/* Product Content */}
-                                        <div className="p-4 sm:p-5">
-                                            <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1">
+                                        <div className="p-3 sm:p-5">
+                                            <h3 className="font-semibold text-slate-900 leading-snug line-clamp-1 text-sm sm:text-base">
                                                 {product.name}
                                             </h3>
 
-                                            <p className="text-slate-500 text-sm mt-1.5 line-clamp-2 min-h-10">
+                                            <p className="text-slate-500 text-xs sm:text-sm mt-1 sm:mt-1.5 line-clamp-2 min-h-8 sm:min-h-10">
                                                 {product.description}
                                             </p>
 
-                                            <div className="mt-4 flex items-center justify-between">
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="text-xl font-bold text-slate-900 tabular-nums">
+                                            <div className="mt-2.5 sm:mt-4 flex items-center justify-between">
+                                                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                                                    <span className="text-base sm:text-xl font-bold text-slate-900 tabular-nums">
                                                         ₹{displayPrice.toLocaleString('en-IN')}
                                                     </span>
                                                     {hasDiscount && (
-                                                        <span className="text-sm text-slate-400 line-through tabular-nums">
+                                                        <span className="text-xs sm:text-sm text-slate-400 line-through tabular-nums">
                                                             ₹{product.price.toLocaleString('en-IN')}
                                                         </span>
                                                     )}
                                                 </div>
 
-                                                <span className="text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
+                                                <span className="text-xs sm:text-sm text-teal-700 font-medium flex items-center gap-1 group-hover:gap-1.5 transition-all">
                                                     View
-                                                    <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                                                    <span className="group-hover:translate-x-0.5 transition-transform hidden sm:inline">→</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -283,7 +283,6 @@ function ProductsPageContent() {
         </main>
     );
 }
-
 export default function ProductsPage() {
     return (
         <Suspense fallback={

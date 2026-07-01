@@ -296,8 +296,8 @@ export default function AdminDashboardPage() {
                                                     ₹{order.totalAmount.toLocaleString('en-IN')}
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${pill}`}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+                                                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${pill}`}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
                                                         {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                                                     </span>
                                                 </td>
