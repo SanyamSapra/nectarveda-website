@@ -292,6 +292,70 @@ export default function ProductDetailPage({ params }) {
                             </p>
                         </div>
 
+                        {/* Benefits */}
+                        {product.benefits?.length > 0 && (
+                            <>
+                                <hr className="my-4 sm:my-6 border-slate-200" />
+                                <div>
+                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                        Benefits
+                                    </h3>
+                                    <ul className="space-y-2">
+                                        {product.benefits.map((benefit, index) => (
+                                            <li key={index} className="flex items-start gap-2.5 text-slate-600 leading-6">
+                                                <span className="mt-2 w-1.5 h-1.5 rounded-full bg-teal-600 shrink-0" />
+                                                <span>{benefit}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Ingredients */}
+                        {product.ingredients?.length > 0 && (
+                            <>
+                                <hr className="my-4 sm:my-6 border-slate-200" />
+                                <div>
+                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                        Ingredients
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.ingredients.map((ingredient, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-slate-100 text-slate-700 text-sm px-3 py-1.5 rounded-lg"
+                                            >
+                                                {ingredient}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Conditions it helps with */}
+                        {product.conditions?.length > 0 && (
+                            <>
+                                <hr className="my-4 sm:my-6 border-slate-200" />
+                                <div>
+                                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                                        Good For
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.conditions.map((condition, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-teal-50 text-teal-700 border border-teal-100 text-sm px-3 py-1.5 rounded-lg"
+                                            >
+                                                {condition}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
                         <hr className="my-4 sm:my-6 border-slate-200" />
 
                         {/* Quantity */}
