@@ -63,7 +63,7 @@ export default function Navbar() {
             logout();
             setProfileMenuOpen(false);
             setMobileProfileOpen(false);
-            router.push('/');
+            router.replace('/');
         }
     };
 

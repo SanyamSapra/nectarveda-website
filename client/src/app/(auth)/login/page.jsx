@@ -30,7 +30,7 @@ export default function LoginPage() {
             const data = await loginUser(formData);
             login(data);
             notify.loginSuccess();
-            router.push(data.role === 'admin' ? '/admin' : '/');
+            router.replace(data.role === 'admin' ? '/admin' : '/');
         } catch (error) {
             console.error(error);
             notify.error(error);

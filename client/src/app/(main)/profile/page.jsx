@@ -111,7 +111,7 @@ export default function ProfilePage() {
             await deleteAccount();
             logout();
             notify.accountDeleted();
-            router.push('/');
+            router.replace('/');
         } catch (error) {
             console.log(error);
             notify.error(error);

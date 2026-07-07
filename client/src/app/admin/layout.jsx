@@ -44,7 +44,7 @@ function Sidebar({ onClose }) {
         } finally {
             logout();
             onClose();
-            router.push('/');
+            router.replace('/');
         }
     };
 
